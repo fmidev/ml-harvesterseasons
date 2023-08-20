@@ -14,6 +14,7 @@ def plot_corr_image(df,p,name1,name2):
         if val=='swi2': # print RR correlation values
             ccvalues=list(r_regression(X,y).round(decimals=2))
     M=np.array(matrix)
+    print(matrix)
     # plot the matrix as an image with an appropriate colormap
     plt.imshow(M.T, aspect='auto', cmap="bwr",vmin=-1,vmax=1)
     # add the column names and values
@@ -24,7 +25,7 @@ def plot_corr_image(df,p,name1,name2):
         plt.text(i, j, "%.2f"%value, va='center', ha='center',fontsize=1.5)
     plt.axis('off')
     plt.colorbar()
-    plt.savefig(name1,dpi=1000)
+    #plt.savefig(name1,dpi=1000)
 
     # bar plot
     x=np.array(ccvalues)
@@ -43,7 +44,7 @@ def plot_corr_image(df,p,name1,name2):
     plt.xlabel("parameters")
     plt.ylabel("corr.")
     plt.title("correlation with swi2")
-    plt.savefig(name2,dpi=1000)
+    #plt.savefig(name2,dpi=1000)
 
 data_dir='/home/ubuntu/data/ML/training-data/soilwater/' # training data
 res_dir='/home/ubuntu/data/ML/results/soilwater/figures/' # result figures

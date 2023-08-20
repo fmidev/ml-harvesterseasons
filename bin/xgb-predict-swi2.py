@@ -10,23 +10,32 @@ pd.set_option('mode.chained_assignment', None) # turn off SettingWithCopyWarning
 mod_dir='/home/ubuntu/data/ML/models/soilwater/' # saved mdl
 data_dir='/home/ubuntu/data/ens/'
 
-#pl=data_dir+'ec-sf-era5_202308_pl-pp-12h-eu-50.grib'
+preds=['evap','evap15d',
+'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'slhf','sshf','ssr','ssrd',#'sro','sro15d','ssro','ssro15d',
+'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
+'tp','tp15d','u10-00','v10-00',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+'dayOfYear'
+]
+
+'''
 swvls_ecsf=data_dir+'ec-sf_202308_swvls-24h-eu-50-fixLevs.grib'
-# swvls haetaan vaan utc-00, pitää muuttaa että hakee myös utc-12
+### Read in swvls data (for swi2 only swvl2 needed)
 swvls=xr.open_dataset(swvls_ecsf, engine='cfgrib', 
                     backend_kwargs=dict(time_dims=('valid_time','verifying_time'),indexpath=''))#[sl_var]
-print(swvls)
 df=swvls.to_dataframe()
+swvls=[]
 df.reset_index(inplace=True)
-
-df[['latitude','longitude']]=df[['latitude','longitude']].astype('float32')
+df=df[['valid_time','level','latitude','longitude','vsw']]
+df[['level','latitude','longitude']]=df[['level','latitude','longitude']].astype('float32')
 df['level']=df['level'].round(2)
-print(df.info())
-
+#print(df.info())
 df1 = df[df.level == 0.0]
 df2 = df[df.level == 0.07]
 df3 = df[df.level == 0.28]
 df4 = df[df.level == 1.0] 
+df=[]
 df1.rename(columns = {'vsw':'swvl1-00'}, inplace = True)
 df1=df1[['valid_time','latitude','longitude','swvl1-00']]
 df2.rename(columns = {'vsw':'swvl2-00'}, inplace = True)
@@ -38,18 +47,41 @@ df4=df4[['valid_time','latitude','longitude','swvl4-00']]
 #print(df1,df2,df3,df4)
 #swvls_df = pd.merge(df1, df2)#, on=['valid_time','latitude','longitude'])
 swvls_df=df1.merge(df2).merge(df3).merge(df4)
-print(swvls_df)
+df1,df2,df3,df4=[],[],[],[]
+'''
 
-print(df1.info())
+### Read in sl data for UTC 00 
+sl00_ecsf=data_dir+'ec-sf_202308_all-24h-eu-50.grib'
+sl_UTC00_var = ['u10','v10','d2m','t2m',
+        'rsn','sd','stl1'] 
+sl00=xr.open_dataset(sl00_ecsf, engine='cfgrib', 
+                    backend_kwargs=dict(time_dims=('valid_time','verifying_time'),indexpath=''))[sl_UTC00_var]
+print(sl00)
+df=sl00.to_dataframe()
+sl00=[]
+df.reset_index(inplace=True)
+df=df[['valid_time','latitude','longitude']+sl_UTC00_var]
+df[['latitude','longitude']]=df[['latitude','longitude']].astype('float32')
+df.rename(columns = {'u10':'u10-00','v10':'v10-00','d2m':'td2-00','t2m':'t2-00','rsn':'rsn-00','sd':'sd-00','stl1':'stl1-00'}, inplace = True)
+print(df)
 
-preds=['evap','evap15d','evapp','evapp15d',
-'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
-'skt-00','slhf','sro','sro15d','sshf','ssr','ssrd','ssro','ssro15d',
-'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
-'tp','tp15d','u10-00','v10-00',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'dayOfYear'
-]
+### Read in disacc sl data (grib: ecsf 24h aggregation since beginning of forecast -> disaccumulated 24h daily sums)
+sl_disacc_ecsf=data_dir+'disacc-202308-50.grib'
+sl_disacc_var=['tp','e','slhf','sshf','ro','str','strd','ssr','ssrd','sf']#'sro','ssro' ei haettu ecsf
+sldisacc=xr.open_dataset(sl_disacc_ecsf, engine='cfgrib', 
+                    backend_kwargs=dict(time_dims=('valid_time','verifying_time'),indexpath=''))[sl_disacc_var]
+print(sldisacc)
+df=sldisacc.to_dataframe()
+sldisacc=[]
+df.reset_index(inplace=True)
+df=df[['valid_time','latitude','longitude']+sl_disacc_var]
+df[['latitude','longitude']]=df[['latitude','longitude']].astype('float32')
+df.rename(columns = {'e':'evap'}, inplace = True)
+print(df)
+
+### Read in ERA5L for rolling cumulative sums
+
+### Read in static values
 
 #####################
 '''# cmd: ensemble member pl, sl, era5 orography input gribs, outfile-name
