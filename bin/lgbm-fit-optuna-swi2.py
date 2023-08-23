@@ -66,15 +66,29 @@ def objective(trial):
 'RR','STAID'
 ]
 '''
-cols_own=['utctime','swi2','evap','evap5d','evap15d','evap60d','evap100d','evapp','evapp5d','evapp15d','evapp60d','evapp100d',
+'''cols_own=['utctime','swi2','evap','evap5d','evap15d','evap60d','evap100d','evapp','evapp5d','evapp15d','evapp60d','evapp100d',
 'laihv-00','laihv-12','lailv-00','lailv-12','ro','ro5d','ro15d','ro60d','ro100d','rsn-00','rsn-12','sd-00','sd-12','sf',
 'skt-00','skt-12','slhf','sro','sro5d','sro15d','sro60d','sro100d','sshf','ssr','ssrd','ssro','ssro5d','ssro15d','ssro60d',
 'ssro100d','stl1-00','stl1-12','str','strd','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00',
 'swvl4-12','t2-00','t2-12','td2-00','td2-12','tp','tp5d','tp15d','tp60d','tp100d','u10-00','u10-12','v10-00','v10-12',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect'
+]'''
+
+cols_own=['utctime','swi2','evap','evap15d',
+'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'slhf','sshf','ssr','ssrd',
+'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
+'tp','tp15d','u10-00','v10-00',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
+'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
+'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
+'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm'
 ]
+
 #fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
-fname='swi2_training_404lucasPoints_2015-2022_all_fixed-2.csv' # input training dataset
+#fname='swi2_training_404lucasPoints_2015-2022_all_fixed-2.csv' # input training dataset
+fname = "swi2_training_10000lucasPoints_2015-2022_all_soils.csv.gz"
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
         
@@ -102,14 +116,26 @@ for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
 # split data to predidctors (preds) and variable to be predicted (var)
-preds=['evap','evap15d','evapp','evapp15d',
+'''preds=['evap','evap15d','evapp','evapp15d',
 'laihv-00','laihv-12','lailv-00','lailv-12','ro','ro15d','rsn-00','rsn-12','sd-00','sd-12','sf',
 'skt-00','skt-12','slhf','sro','sro15d','sshf','ssr','ssrd','ssro','ssro15d',
 'stl1-00','stl1-12','str','strd','swvl2-00','swvl2-12','t2-00','t2-12','td2-00',
 'td2-12','tp','tp15d','u10-00','u10-12','v10-00','v10-12',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
 'dayOfYear'
-]
+]'''
+preds=['evap','evap15d',
+'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'slhf','sshf','ssr','ssrd',
+'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
+'tp','tp15d','u10-00','v10-00',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
+'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
+'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
+'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm',
+'dayOfYear']
+
 var=['swi2']
 train_x=train_stations[preds] 
 valid_x=test_stations[preds]
@@ -121,7 +147,7 @@ dtrain = lgb.Dataset(train_x, label=train_y)
 dvalid = lgb.Dataset(valid_x,label=valid_y)
     
 ### Optuna trials
-study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="lgbm-swi2-2",direction="minimize",load_if_exists=True)
+study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="lgbm-swi2-4",direction="minimize",load_if_exists=True)
 study.optimize(objective, n_trials=100, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))

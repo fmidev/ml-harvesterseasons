@@ -12,7 +12,7 @@ data_dir='/home/ubuntu/data/ens/'
 
 preds=['evap','evap15d',
 'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
-'slhf','sshf','ssr','ssrd',#'sro','sro15d','ssro','ssro15d',
+'slhf','sshf','ssr','ssrd',
 'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
 'tp','tp15d','u10-00','v10-00',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
