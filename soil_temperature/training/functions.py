@@ -1,10 +1,12 @@
 import os, glob,requests,json,sys
 import pandas as pd
 import xarray as xr
+import dateutil.parser
 #import xgboost as xgb
 
+#copied from bin and edited
 #eobs_path='/home/smartmet/data/eobs/blend' # copernicus-koneella
-data_dir='/home/ubuntu/data/ml-training-data/data/' # training data
+# data_dir='/home/ubuntu/data/ml-training-data/data/' # training data
 
 def smartmet_ts_query(start,end,tstep,lat,lon,pardict):
     ''' timeseries query to smartmet-server
@@ -98,6 +100,7 @@ def smartmet_ts_query_multiplePointsByID_hour(source,start,end,h,pardict,llpdict
 
     # Response to dataframe
     response=requests.get(url=query)
+    print(response)
     results_json=json.loads(response.content)
     #print(results_json)
     for i in range(len(results_json)):
@@ -238,9 +241,14 @@ def smartmet_ts_query_multiplePoints(source,start,end,tstep,latlons,pardict,stai
     return df
 
 def rolling_cumsum(df,days,par):
-    df[par] = df.groupby(['pointID', 'latitude','longitude'])[['utctime',par]].apply(lambda group: group.rolling(days, on='utctime').sum())
+    #df[par] = df.groupby(['pointID', 'latitude','longitude'])[['utctime',par]].apply(lambda group: group.rolling(days, on='utctime').sum())
+    df = df.groupby(['pointID', 'latitude','longitude'],as_index=True)[par].rolling(days).sum().reset_index()
+    # print(df.head(10))
     df['utctime']=pd.to_datetime(df['utctime'])
-    df = df.loc[(df['utctime'] >= '2015-01-01')]
+    
+    # df = df.loc[df.index > pd.Timestamp('2015-01-01')]
+    df = df[(df['utctime'] > '2014-12-31')]
+            
     df.rename({par:par+days}, axis=1, inplace=True)
     return df
 '''  

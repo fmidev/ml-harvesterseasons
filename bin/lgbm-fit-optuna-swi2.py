@@ -75,20 +75,20 @@ def objective(trial):
 ]'''
 
 cols_own=['utctime','swi2','evap','evap15d',
-'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'laihv-00','lailv-00',
+'ro','ro15d','rsn-00','sd-00',
 'slhf','sshf','ssr','ssrd',
-'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
-'tp','tp15d','u10-00','v10-00',
+'stl1-00','str','swvl2-00','t2-00','td2-00',
+'tp','tp15d',
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
-'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
-'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
-'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm'
+'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+'soc_0-5cm','soc_15-30cm','soc_5-15cm',
 ]
-
-#fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
-#fname='swi2_training_404lucasPoints_2015-2022_all_fixed-2.csv' # input training dataset
-fname = "swi2_training_10000lucasPoints_2015-2022_all_soils.csv.gz"
+fname = "swi2_training_10000lucasPoints_2015-2022_all_soils_swi2clim_ecc.csv.gz"
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
         
@@ -125,16 +125,20 @@ for y in test_y:
 'dayOfYear'
 ]'''
 preds=['evap','evap15d',
-'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'laihv-00','lailv-00',
+'ro','ro15d','rsn-00','sd-00',
 'slhf','sshf','ssr','ssrd',
-'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
-'tp','tp15d','u10-00','v10-00',
+'stl1-00','str','swvl2-00','t2-00','td2-00',
+'tp','tp15d',
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
-'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
-'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
-'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm',
-'dayOfYear']
+'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+'soc_0-5cm','soc_15-30cm','soc_5-15cm',
+'dayOfYear'
+]
 
 var=['swi2']
 train_x=train_stations[preds] 
@@ -147,7 +151,7 @@ dtrain = lgb.Dataset(train_x, label=train_y)
 dvalid = lgb.Dataset(valid_x,label=valid_y)
     
 ### Optuna trials
-study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="lgbm-swi2-4",direction="minimize",load_if_exists=True)
+study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="lgbm-swi2-5",direction="minimize",load_if_exists=True)
 study.optimize(objective, n_trials=100, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))

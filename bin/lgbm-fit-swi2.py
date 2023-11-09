@@ -8,8 +8,9 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import math
+np.random.seed(42)
 warnings.filterwarnings("ignore")
-### XGBoost for swi2
+### lgb, for swi2
 
 startTime=time.time()
 
@@ -19,50 +20,36 @@ res_dir='/home/ubuntu/data/ML/results/soilwater'
 
 ### Read in 2D tabular training data
 '''
-all cols in training file
-utctime,swi2,evap,evap5d,evap15d,evap60d,evap100d,evapp,evapp5d,evapp15d,evapp60d,evapp100d,
-laihv-00,laihv-12,lailv-00,lailv-12,ro,ro5d,ro15d,ro60d,ro100d,rsn-00,rsn-12,sd-00,sd-12,sf,
-skt-00,skt-12,slhf,sro,sro5d,sro15d,sro60d,sro100d,sshf,ssr,ssrd,ssro,ssro5d,ssro15d,ssro60d,
-ssro100d,stl1-00,stl1-12,str,strd,swvl1-00,swvl1-12,swvl2-00,swvl2-12,swvl3-00,swvl3-12,swvl4-00,
-swvl4-12,t2-00,t2-12,td2-00,td2-12,tp,tp5d,tp15d,tp60d,tp100d,u10-00,u10-12,v10-00,v10-12,
-TH_LAT,TH_LONG,DTM_height,DTM_slope,DTM_aspect,TCD,WAW,CorineLC
+all cols 
+utctime,swi2,evap,evap5d,evap15d,evap60d,evap100d,evapp,evapp5d,evapp15d,evapp60d,evapp100d,laihv-00,laihv-12,lailv-00,lailv-12,
+ro,ro5d,ro15d,ro60d,ro100d,rsn-00,rsn-12,sd-00,sd-12,sf,skt-00,skt-12,slhf,sro,sro5d,sro15d,sro60d,sro100d,sshf,ssr,ssrd,
+ssro,ssro5d,ssro15d,ssro60d,ssro100d,stl1-00,stl1-12,str,strd,swvl1-00,swvl1-12,swvl2-00,swvl2-12,swvl3-00,swvl3-12,swvl4-00,swvl4-12,
+t2-00,t2-12,td2-00,td2-12,tp,tp5d,tp15d,tp60d,tp100d,u10-00,u10-12,v10-00,v10-12,
+swi2clim,
+lake_cover,cvh,cvl,lake_depth,land_cover,soiltype,urban_cover,tvh,tvl,
+POINT_ID,TH_LAT,TH_LONG,DTM_height,DTM_slope,DTM_aspect,TCD,WAW,CorineLC,
+clay_0-5cm,clay_100-200cm,clay_15-30cm,clay_30-60cm,clay_5-15cm,clay_60-100cm,
+sand_0-5cm,sand_100-200cm,sand_15-30cm,sand_30-60cm,sand_5-15cm,sand_60-100cm,
+silt_0-5cm,silt_100-200cm,silt_15-30cm,silt_30-60cm,silt_5-15cm,silt_60-100cm,
+soc_0-5cm,soc_100-200cm,soc_15-30cm,soc_30-60cm,soc_5-15cm,soc_60-100cm
 '''
-
-'''
-first version teaching with
-cols_own=['utctime','swi2','evap','evap5d','evap15d','evap60d','evap100d','tp','tp5d','tp15d','tp60d','tp100d','ro','ro5d','ro15d','ro60d','ro100d',
-'lailv-00','lailv-12','laihv-00','laihv-12','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00','swvl4-12',
-'u10-00','u10-12','v10-00','v10-12','rsn-00','rsn-12','sd-00','sd-12','stl1-00','stl1-12','t2-00','t2-12','td2-00','td2-12','sf','slhf','sshf',
-'ssr','ssrd','str','strd','TH_LAT','TH_LONG','DTM_height','DTM_slope'
+cols_own=['utctime','swi2','evap','evap15d',
+'laihv-00','lailv-00',
+'ro','ro15d','rsn-00','sd-00',
+'slhf','sshf','ssr','ssrd',
+'stl1-00','str','swvl2-00','t2-00','td2-00',
+'tp','tp15d',
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+'soc_0-5cm','soc_15-30cm','soc_5-15cm',
 ]
-'''
-
-cols_own=['utctime','swi2','evap','evap5d','evap15d','evap60d','evap100d','evapp','evapp5d','evapp15d','evapp60d','evapp100d',
-'laihv-00','laihv-12','lailv-00','lailv-12','ro','ro5d','ro15d','ro60d','ro100d','rsn-00','rsn-12','sd-00','sd-12','sf',
-'skt-00','skt-12','slhf','sro','sro5d','sro15d','sro60d','sro100d','sshf','ssr','ssrd','ssro','ssro5d','ssro15d','ssro60d',
-'ssro100d','stl1-00','stl1-12','str','strd','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00',
-'swvl4-12','t2-00','t2-12','td2-00','td2-12','tp','tp5d','tp15d','tp60d','tp100d','u10-00','u10-12','v10-00','v10-12',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect'
-]
-#fname='swi2_training_236lucasPoints_2015-2022-all.csv'
-#fname='swi2_training_404lucasPoints_2015-2022-all.csv'
-#fname='swi2_training_31801900_2015-2022_all.csv'
-#fname='swi2_training_236lucasPoints_2015-2022_all_FIXED.csv'
-#fname='swi2_training_404lucasPoints_2015-2022_all_FIXED.csv'
-#fname='swi2_training_4108lucasPoints_2015-2022_all.csv'
-#fname='swi2_training_10000lucasPoints_2015-2022_all.csv'
-#fname='swi2_training_10000lucasPoints_2015-2022_all_2.csv'
-#fname='swi2_training_10000lucasPoints_2015-2022_all_2+.csv'
-fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
+fname = "swi2_training_10000lucasPoints_2015-2022_all_soils_swi2clim_ecc.csv.gz"
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
-
-'''
-df['RR']=df['RR']/10000.0 # units from x0.1mm to m
-# Fix E-OBS station rainfall observations (rain > 12 mm: x1.4, other x1.1)
-#df.loc[ df['RR'] >= 0.012, 'RR'] = df['RR']*1.4 
-#df.loc[ df['RR'] < 0.012, 'RR'] = df['RR']*1.1
-''' 
 
 # add day of year to predictors
 df['utctime']=pd.to_datetime(df['utctime'])
@@ -87,34 +74,20 @@ for y in train_y:
 for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
-#varOut=test_stations[['utctime','STAID','RR','tp-m']].copy()
-
 # split data to predidctors (preds) and variable to be predicted (var)
-''' 
-#first training preds
-preds=['evap','evap5d','evap15d','evap60d','evap100d','tp','tp5d','tp15d','tp60d','tp100d','ro','ro5d','ro15d','ro60d','ro100d',
-'lailv-00','lailv-12','laihv-00','laihv-12','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00','swvl4-12',
-'u10-00','u10-12','v10-00','v10-12','rsn-00','rsn-12','sd-00','sd-12','stl1-00','stl1-12','t2-00','t2-12','td2-00','td2-12','sf','slhf','sshf',
-'ssr','ssrd','str','strd','TH_LAT','TH_LONG','DTM_height','DTM_slope','dayOfYear'
-]
-'''
-'''
-#training with many pars
-preds=['evap','evap5d','evap15d','evap60d','evap100d','evapp','evapp5d','evapp15d','evapp60d','evapp100d',
-'laihv-00','laihv-12','lailv-00','lailv-12','ro','ro5d','ro15d','ro60d','ro100d','rsn-00','rsn-12','sd-00','sd-12','sf',
-'skt-00','skt-12','slhf','sro','sro5d','sro15d','sro60d','sro100d','sshf','ssr','ssrd','ssro','ssro5d','ssro15d','ssro60d',
-'ssro100d','stl1-00','stl1-12','str','strd','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00',
-'swvl4-12','t2-00','t2-12','td2-00','td2-12','tp','tp5d','tp15d','tp60d','tp100d','u10-00','u10-12','v10-00','v10-12',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope',
-'dayOfYear'
-]'''
-# training with relevant pars
-preds=['evap','evap15d','evapp','evapp15d',
-'laihv-00','laihv-12','lailv-00','lailv-12','ro','ro15d','rsn-00','rsn-12','sd-00','sd-12','sf',
-'skt-00','skt-12','slhf','sro','sro15d','sshf','ssr','ssrd','ssro','ssro15d',
-'stl1-00','stl1-12','str','strd','swvl2-00','swvl2-12','t2-00','t2-12','td2-00',
-'td2-12','tp','tp15d','u10-00','u10-12','v10-00','v10-12',
+preds=['evap','evap15d',
+'laihv-00','lailv-00',
+'ro','ro15d','rsn-00','sd-00',
+'slhf','sshf','ssr','ssrd',
+'stl1-00','str','swvl2-00','t2-00','td2-00',
+'tp','tp15d',
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+'soc_0-5cm','soc_15-30cm','soc_5-15cm',
 'dayOfYear'
 ]
 var=['swi2']
@@ -126,56 +99,48 @@ preds_train=preds_train.astype(float)
 
 ### LGMB
 # Define model hyperparameters 
-nstm=500
-lrte=0.1
-max_depth=7
-subsample=0.7
+nstm=1000
+num_leaves=41
+lrte=0.19
+feature_fraction=0.48
+reg_alpha=0.27
+max_depth=8
+subsample=0.82
 colsample_bytree=0.7
-colsample_bynode=1
-num_parallel_tree=10
+nthread=8
+n_boost_round= 10000
+verbose=100
 
 def rmse(preds, train_data):
     labels = train_data.get_label()
-    MSE = mean_squared_error(labels, preds)
-    RMSE = math.sqrt(MSE)
+    MAE = mean_absolute_error(labels, preds)
+    RMSE = math.sqrt(MAE)
     return 'RMSE', RMSE, False
+
+def mae(preds, train_data):
+    labels = train_data.get_label()
+    MAE = mean_absolute_error(labels, preds)
+    return 'MAE', MAE, False
 
 # initialize and tune model
 lgb_params = {'objective' :'regression',
-              'num_leaves': 10,
+              'num_leaves': num_leaves,
               'n_estimators':nstm,
               'learning_rate': lrte,
-              'feature_fraction': 0.8,
+              'feature_fraction': feature_fraction,
               'max_depth': max_depth,
-              'reg_alpha':0.01,
+              'reg_alpha':reg_alpha,
               'n_jobs':64,
               'random_state':99,
               'subsample':subsample,
-              'colsample_bytree':colsample_bytree,
-              'verbose': 0,
-              'num_boost_round': 10000,
+              'verbose': verbose,
+              'num_boost_round': n_boost_round,
               'early_stopping_rounds': 50,
-              'nthread':num_parallel_tree}
-'''xgbr=xgb.XGBRegressor(
-            objective= 'reg:squarederror',#'count:poisson'
-            n_estimators=nstm,
-            learning_rate=lrte,
-            max_depth=max_depth,
-            alpha=0.01,#gamma=0.01
-            num_parallel_tree=num_parallel_tree,
-            n_jobs=64,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree,
-            colsample_bynode=colsample_bynode,
-            eval_metric='rmse',
-            random_state=99,
-            early_stopping_rounds=50
-            )'''
-
+              'nthread':nthread}
 # train model 
-lgbtrain = lgb.Dataset(data=preds_train, label=var_train, feature_name=cols_own)
+lgbtrain = lgb.Dataset(preds_train, label=var_train)
 
-lgbval = lgb.Dataset(data=preds_test, label=var_test, reference=lgbtrain, feature_name=cols_own)
+lgbval = lgb.Dataset(preds_test, label=var_test)
 
 model = lgb.train(lgb_params, lgbtrain,
                   valid_sets=[lgbtrain, lgbval],
@@ -184,29 +149,22 @@ model = lgb.train(lgb_params, lgbtrain,
                   feval=rmse,
                   verbose_eval=100)
 
-
-
-##################
-'''eval_set=[(preds_test,var_test)]
-lgb.fit(
-        preds_train,var_train,
-        eval_set=eval_set)'''
 print(model)
 
 # predict var and compare with test
 var_pred=model.predict(preds_test,num_iteration=model.best_iteration)
+mae=mean_absolute_error(var_test,var_pred)
 mse=mean_squared_error(var_test,var_pred)
-#varOut['RR-pred']=var_pred.tolist()
-#varOut.to_csv(res_dir+'predicted_results_194sta.csv')
 
 # save model 
-lgb.save_model(mod_dir+'/lgb_swi2_2015-2022_10000points-5.txt')
+model.save_model(mod_dir+'/lgbm_mdl_swi2_2015-2022_10000points-1.txt',num_iteration=model.best_iteration)
 
-print("RMSE: %.5f" % (mse**(1/2.0)))
+print("MAE: %.5f" % (mae))
+print("RMSE: %.5f" % (rmse))
 
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))
 
 # plotting feature importance
-plot_importance(model)
-plt.savefig('plot_importance_swi2_lgbm.jpg', height=.5,grid=None)
+plot_importance(model,figsize=(10,10),height=0.5,grid=None)
+plt.savefig('/home/ubuntu/data/ML/results/soilwater/figures/plot_importance_swi2_lgbm-1.jpg')

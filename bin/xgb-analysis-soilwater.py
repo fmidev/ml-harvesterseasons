@@ -17,19 +17,22 @@ res_dir='/home/ubuntu/data/ML/results/soilwater/figures/'
 fname='model-1000stations-era5params-*.txt' # pois: utctime
 '''
 # xgb-fit without gridsearchCV
-#fname='mdl_swi2_2015-2022_4108points-2.txt'
-fname=sys.argv[1]
+#fname=sys.argv[1]
+fname = 'mdl_swi2_2015-2022_10000points-13.txt'
 # Predictors in the fitted mdl
 preds=['evap','evap15d',
-'laihv-00','lailv-00','ro','ro15d','rsn-00','sd-00','sf',
+'laihv-00','lailv-00',
+'ro','ro15d','rsn-00','sd-00',
 'slhf','sshf','ssr','ssrd',
-'stl1-00','str','strd','swvl2-00','t2-00','td2-00',
-'tp','tp15d','u10-00','v10-00',
+'stl1-00','str','swvl2-00','t2-00','td2-00',
+'tp','tp15d',
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
 'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
-'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
-'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
-'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm',
+'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+'soc_0-5cm','soc_15-30cm','soc_5-15cm',
 'dayOfYear'
 ]
 ## F-score
@@ -65,7 +68,7 @@ ax.set_title(fname)
 ax.set_xscale('log')
 plt.tight_layout()
 #f.savefig('Fscore.pdf')
-f.savefig(res_dir+'Fscore_swi2-10000points-1.png', dpi=200)
+f.savefig(res_dir+'Fscore_swi2-10000points-4.png', dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 '''

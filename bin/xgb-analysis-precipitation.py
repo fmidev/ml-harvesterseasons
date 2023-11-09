@@ -17,20 +17,25 @@ res_dir='/home/ubuntu/data/ML/results/precipitation-harmonia/figures/'
 fname='model-1000stations-era5params-*.txt' # pois: utctime
 '''
 # xgb-fit without gridsearchCV
-fname='mdl_194sta_2000-2020-1.txt'
+#fname='mdl_RR_5441sta_2000-2020-1.txt'
+#fname='mdl_RR_5441sta_2000-2020-2.txt'
+fname='mdl_RRweight_2000-2020-5.txt'
+figname='Fscore_RRweight_5441sta_2000-2020-5.png'
 # Predictors in the fitted mdl
-preds=['tp-m','tcc-0to1','slor','msl-Pa','sdor-m','LAT','LON','anor-rad','kx-00','kx-12',
-    'q850-kgkg-00','q850-kgkg-12','q700-kgkg-00','q700-kgkg-12','q500-kgkg-00','q500-kgkg-12',
-    'u850-ms-00','u850-ms-12','u700-ms-00','u700-ms-12','u500-ms-00','u500-ms-12',
-    'z-m','z850-m-00','z850-m-12','z700-m-00','z700-m-12','z500-m-00','z500-m-12',
-    'v850-ms-00','v850-ms-12','v700-ms-00','v700-ms-12','v500-ms-00','v500-ms-12','lsm-0to1',
-    #'HGHT','dtw','dtr','dtl','dto','fch',
-    'ro-m','sf-m',
-    'sshf-Jm2','slhf-Jm2','e-m','tsr-jm2','fg10-ms',
-    't2m-K','td-K','u10-ms','v10-ms','sd-kgm2','rsn-kgm2','stl1-K','mx2t-K','mn2t-K',
-    't850-K-00','t850-K-12','t700-K-00','t700-K-12','t500-K-00','t500-K-12','dayOfYear'
-    #,'slope','aspect','tpi','tri'
-    ]
+preds=[
+    'latitude','longitude',
+    #'HGHT','SLOPE','ASPECT','TPI','TRI','DTW','DTR','DTL','DTO','FCH',
+    'anor','evap','kx-00','lsm','mn2t-00','msl-00','mx2t-00',
+    'q500-00','q700-00','q850-00','ro','rsn-00','sd-00','sdor',
+    'sf',#'skt-00',
+    'slhf','slor','sshf','ssr','ssrd','strd',#'sst-00',
+    't2m-00','t500-00','t700-00','t850-00','tcc-00','td2m-00','tp',
+    'tsr','ttr','u10-00','u500-00','u700-00','u850-00','v10-00',
+    'v500-00',#'v700-00',
+    'v850-00','z',#'z500-00',
+    'z700-00','z850-00',
+    'dayOfYear'
+]
 print(len(preds))
 ## F-score
 print("start fscore")
@@ -65,7 +70,7 @@ ax.set_title(fname)
 ax.set_xscale('log')
 plt.tight_layout()
 #f.savefig('Fscore.pdf')
-f.savefig(res_dir+'Fscore_precipitatin-194stas-2.png', dpi=200)
+f.savefig(res_dir+figname, dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 '''

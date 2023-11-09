@@ -1,37 +1,45 @@
-#!/usr/bin/env python3
-import requests, os, time, glob, json,sys
+import os, time, random, warnings
 import pandas as pd
-import functions as fcts
 import numpy as np
-import itertools
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-### SmarMet-server timeseries query to fetch ERA5-Land training data for machine learning
+import xgboost as xgb
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+warnings.filterwarnings("ignore")
+### XGBoost for precipitation downscaling and bias-adjusting (10/2023)
 
 startTime=time.time()
 
-data_dir='/home/ubuntu/data/ML/training-data/'
-#lucas=data_dir+'soilwater/lucas_allA-Hclass_rep.csv'
-lucas=data_dir+'LUCAS_2018_Copernicus_attr+additions.csv'
-cols_own=['POINT_ID','TH_LAT','TH_LONG']#,'NUTS0','CPRN_LC','LC1_LABEL','DTM_height','DTM_slope','DTM_aspect','TCD','WAW','CorineLC']
-lucas_df=pd.read_csv(lucas,usecols=cols_own)
+data_dir='/home/ubuntu/data/ML/training-data/precipitation-harmonia/' # training data
+mod_dir='/home/ubuntu/data/ML/models/precipitation-harmonia/' # saved mdl
+res_dir='/home/ubuntu/data/ML/results/precipitation-harmonia/'
 
-lat=lucas_df['TH_LAT'].values.tolist()
-lon=lucas_df['TH_LONG'].values.tolist()
-points=lucas_df['POINT_ID'].values.tolist()
+### Read in 2D tabular training data
+cols_own=[
+    'utctime','latitude','longitude','pointID',
+    'anor','evap','kx-00','lsm','mn2t-00','msl-00','mx2t-00',
+    'q500-00','q700-00','q850-00','ro','rsn-00','sd-00','sdor',
+    'sf','skt-00','slhf','slor','sshf','ssr','ssrd','strd',#'sst-00',
+    't2m-00','t500-00','t700-00','t850-00','tcc-00','td2m-00','tp',
+    'tsr','ttr','u10-00','u500-00','u700-00','u850-00','v10-00',
+    'v500-00','v700-00','v850-00','z','z500-00','z700-00','z850-00'
+]
+#tp=pd.read_csv('/lustre/tmp/strahlen/mlbias/data/era5+_eobs_dtw_1995-2015_all6173_RRweight.csv', iterator=True,chunksize=1000,usecols=cols_own)
+#df = pd.concat(tp, ignore_index=True) # read in chunks too large csv
+fname='RR-training-all6766/RR_training_era5_431_2000-2020_all.csv' # training data
+print(fname)
+df_era5=pd.read_csv(data_dir+fname,usecols=cols_own)
+fname='/home/ubuntu/data/ML/training-data/eobs/eobs_2000-2020_431.csv'
+df_eobs=pd.read_csv(fname)
+print(df_era5)
 
-lat=lat[:3]
-lon=lon[:3]
-points=points[:3]
-llpdict={i:[j, k] for i, j, k in zip(points,lat, lon)}
-print(llpdict)
+df_eobs.rename(columns={'DATE':'utctime','STAID':'pointID','LAT': 'latitude', 'LON': 'longitude'}, inplace=True)
+print(df_eobs)
 
-latlonlst=[]
-for t in llpdict.values():
-    for i in t:
-        latlonlst.append(i)
-print(latlonlst)
 
-staids=[]
-for key in llpdict.keys():
-    print(key)
+df=pd.merge(df_era5,df_eobs, on=['utctime','pointID','latitude','longitude'])
+
+print(df_era5)
+print(df_eobs)
+print(df)
+
+

@@ -3,15 +3,64 @@ import numpy as np
 from dataclasses import dataclass
 import geopandas as gpd
 import matplotlib.pyplot as plt
-# script to check how lucas land cover types and countries are distributed in the ML subset of points
+# script to check how eobs countries are distributed
 
 data_dir='/home/ubuntu/data/ML/training-data/'
-lucas=data_dir+'lucas/LUCAS_2018_Copernicus_attr+additions_AT-UK.csv'
-cols_own=['NUTS0','CPRN_LC','POINT_ID','CorineLC']
-df_all=pd.read_csv(lucas,usecols=cols_own)
-df_all['POINT_ID']=pd.to_numeric(df_all['POINT_ID'])
-#print(df_all)
 
+fname='precipitation-harmonia/5441_training_stations.txt'
+with open(r'/home/ubuntu/data/ML/training-data/'+fname, 'r') as file:
+    lines = [line.rstrip() for line in file]
+points=[]
+for sta in lines:
+    points.append(int(sta))
+
+eobs=data_dir+'EOBS_orography_EU_10766points.csv'
+cols_own=['CN','STAID']
+df_all=pd.read_csv(eobs,usecols=cols_own)
+df_all['STAID']=pd.to_numeric(df_all['STAID'])
+print(df_all)
+
+df_out=df_all[df_all.STAID.isin(points)]
+print(df_out)
+
+countries=df_all.CN.drop_duplicates().to_list()
+
+for c in countries: 
+    #c_subset=len(df_subset[df_subset['NUTS0'] == c])
+    c_out=len(df_all[df_all['CN'] == c])
+    print(c,c_out)
+    #c_out=len(df_out[df_out['CN'] == c])
+    #print(c,c_out)
+
+
+'''
+data_dir='/home/ubuntu/data/ML/training-data/'
+eobs=data_dir+'EOBS_orography_EU_10766points.csv'
+cols_own=['CN','STAID']
+df_all=pd.read_csv(eobs,usecols=cols_own)
+df_out=pd.read_csv(eobs)
+df_all['STAID']=pd.to_numeric(df_all['STAID'])
+print(df_all)
+print(df_out)
+
+countries=df_all.CN.drop_duplicates().to_list()
+
+for c in countries: 
+    #c_subset=len(df_subset[df_subset['NUTS0'] == c])
+    c_all=len(df_all[df_all['CN'] == c])
+    print(c,c_all)
+
+germany=df_all[df_all['CN']=='DE']
+germany=germany.sample(4000)
+print(germany)
+#USERS.email.isin(EXCLUDE.email)
+df_out=df_out[~df_out.STAID.isin(germany.STAID)]
+print(df_out.drop(columns=['Unnamed: 0','index']))
+germany=df_out[df_out['CN']=='DE']
+print(germany)
+
+df_out.to_csv(data_dir+'EOBS_orography_EU_6766points.csv',index=False)
+''''''
 # subset
 with open(r'/home/ubuntu/data/ML/training-data/10000pointIDs-2.txt', 'r') as file:
     lines = [line.rstrip() for line in file]
@@ -19,7 +68,6 @@ pointslst=[]
 for sta in lines:
     pointslst.append(int(sta))
 df_subset=df_all.loc[df_all['POINT_ID'].isin(pointslst)]
-
  
 # display dataframe
 print('Data:')
@@ -53,7 +101,7 @@ for c in countries:
     c_subset=len(df_subset[df_subset['NUTS0'] == c])
     c_all=len(df_all[df_all['NUTS0'] == c])
     print(c,c_subset, c_all)
-
+'''
 # koko setissä maapisteiden lkm per maa ja cprn-lc lkm per luokka
 # prosenttiosuus esim 34% AT kaikista 10 000 points ja numero esim. 2345 points AT 
 # prosenttiosuus esim 40% CPRN_LC C1 kaikista 10 000 points ja numero esim. 100 points C1 

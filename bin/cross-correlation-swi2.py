@@ -22,10 +22,10 @@ def plot_corr_image(df,p,name1,name2):
         plt.text(-1,i,var,va='center',ha='right',fontsize=3)
         plt.text(i,-1,var,rotation=90.0,ha='center',fontsize=3)
     for (i, j), value in np.ndenumerate(M):
-        plt.text(i, j, "%.2f"%value, va='center', ha='center',fontsize=1.5)
+        plt.text(i, j, "%.2f"%value, va='center', ha='center',fontsize=0.5)
     plt.axis('off')
     plt.colorbar()
-    #plt.savefig(name1,dpi=1000)
+    plt.savefig(name1,dpi=1000)
 
     # bar plot
     x=np.array(ccvalues)
@@ -44,7 +44,7 @@ def plot_corr_image(df,p,name1,name2):
     plt.xlabel("parameters")
     plt.ylabel("corr.")
     plt.title("correlation with swi2")
-    #plt.savefig(name2,dpi=1000)
+    plt.savefig(name2,dpi=1000)
 
 data_dir='/home/ubuntu/data/ML/training-data/soilwater/' # training data
 res_dir='/home/ubuntu/data/ML/results/soilwater/figures/' # result figures
@@ -54,17 +54,22 @@ cols_own=['utctime','swi2','evap','evap5d','evap15d','evap60d','evap100d','evapp
 'skt-00','skt-12','slhf','sro','sro5d','sro15d','sro60d','sro100d','sshf','ssr','ssrd','ssro','ssro5d','ssro15d','ssro60d',
 'ssro100d','stl1-00','stl1-12','str','strd','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00',
 'swvl4-12','t2-00','t2-12','td2-00','td2-12','tp','tp5d','tp15d','tp60d','tp100d','u10-00','u10-12','v10-00','v10-12',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope', 'DTM_aspect','TCD','WAW'
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope', 'DTM_aspect','TCD','WAW',
+'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
+'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
+'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
+'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm'
 ]
 #fname='swi2_training_236lucasPoints_2015-2022_all_FIXED.csv'
 #fname='swi2_training_4108lucasPoints_2015-2022_all.csv'
-fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
+#fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
+fname='swi2_training_10000lucasPoints_2015-2022_all_soils_swi2clim_ecc.csv.gz'
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
 df['utctime']=pd.to_datetime(df['utctime'])
 df['dayOfYear'] = df['utctime'].dt.dayofyear
-#print(df)
-#df=df.drop(columns=['utctime'])
 
 # drop negative swi2, NaN and -99999 values
 s1=df.shape[0]
@@ -79,14 +84,20 @@ vars=['swi2','evap','evap5d','evap15d','evap60d','evap100d','evapp','evapp5d','e
 'skt-00','skt-12','slhf','sro','sro5d','sro15d','sro60d','sro100d','sshf','ssr','ssrd','ssro','ssro5d','ssro15d','ssro60d',
 'ssro100d','stl1-00','stl1-12','str','strd','swvl1-00','swvl1-12','swvl2-00','swvl2-12','swvl3-00','swvl3-12','swvl4-00',
 'swvl4-12','t2-00','t2-12','td2-00','td2-12','tp','tp5d','tp15d','tp60d','tp100d','u10-00','u10-12','v10-00','v10-12',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect','dayOfYear'
+'swi2clim',
+'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
+'TH_LAT','TH_LONG','DTM_height','DTM_slope', 'DTM_aspect','TCD','WAW',
+'clay_0-5cm','clay_100-200cm','clay_15-30cm','clay_30-60cm','clay_5-15cm','clay_60-100cm',
+'sand_0-5cm','sand_100-200cm','sand_15-30cm','sand_30-60cm','sand_5-15cm','sand_60-100cm',
+'silt_0-5cm','silt_100-200cm','silt_15-30cm','silt_30-60cm','silt_5-15cm','silt_60-100cm',
+'soc_0-5cm','soc_100-200cm','soc_15-30cm','soc_30-60cm','soc_5-15cm','soc_60-100cm',
+'dayOfYear'
 ]
+print(len(vars))
 df=df[vars]
 print(df)
 
-#name1=res_dir+'4108points_cross-correlation_matrix.png'
-#name2=res_dir+'4108points_cross-correlation_bar.png'
-name1=res_dir+'10000points_cross-correlation_matrix.png'
-name2=res_dir+'10000points_cross-correlation_bar.png'
+name1=res_dir+'10000points_cross-correlation_matrix_ALLpreds.png'
+name2=res_dir+'10000points_cross-correlation_bar_ALLpreds.png'
 
 plot_corr_image(df,vars,name1,name2)
