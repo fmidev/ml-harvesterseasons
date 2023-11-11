@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import requests, os, time, glob, json,sys
 import pandas as pd
+from functools import reduce
 import functions as fcts
 import numpy as np
 import itertools
@@ -11,20 +12,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 startTime = time.time()
 
 path_eu_data = "/home/ubuntu/ml-harvesterseasons/soil_temperature/data/Europe_soil_metadata.txt"
-
-#lucas=data_dir+'soilwater/lucas_allA-Hclass_rep.csv'
-# lucas=location_dir+'LUCAS_2018_Copernicus_attr+additions.csv'
-# cols_own=['POINT_ID','TH_LAT','TH_LONG']#,'NUTS0','CPRN_LC','LC1_LABEL','DTM_height','DTM_slope','DTM_aspect','TCD','WAW','CorineLC']
-# lucas_df=pd.read_csv(lucas,usecols=cols_own)
-# station_loc = pd.read_csv(location_dir)
-# station_loc = station_loc.join(station_loc['xy'].str.split('_', n=1, expand=True).rename(columns={0:'long', 1:'lat'}))
-# station_loc = station_loc.drop("xy", axis='columns')
-# station_loc["long"] = station_loc["long"].astype(float)
-# station_loc["lat"] = station_loc["lat"].astype(float)
-
-# eu_station_loc = pd.DataFrame()
-# eu_station_loc = station_loc.loc[(station_loc["long"] >= -30.0) & (station_loc["long"] <= 50)]
-# eu_station_loc = station_loc.loc[(station_loc['lat'] >= 25) & (station_loc['lat'] <= 75)]
+source = 'desm.harvesterseasons.com:8080'
 
 eu_data = pd.read_csv(path_eu_data,sep=";")
 pd.options.display.max_columns = None
@@ -36,7 +24,7 @@ eu_data = eu_data.dropna(subset=['site_lat','site_long'])
 lat = eu_data['site_lat'].tolist()
 lon = eu_data['site_long'].tolist()
 # points=lucas_df['POINT_ID'].values.tolist()
-pointids = list(range(1,len(lon)))
+pointids = list(range(1,6000)) # can only accomodate some , setting to 6000
 # print(lon[:5]) 
 
 
@@ -44,9 +32,9 @@ llpdict = {i:[j, k] for i, j, k in zip(pointids,lat, lon)}
 
 
 # EXAMPLE get subdict based on list of pointids:
-pointids = list(range(1,10))
-llpdict = dict((k, llpdict[k]) for k in pointids
-           if k in llpdict)
+# pointids = list(range(1,10))
+# llpdict = dict((k, llpdict[k]) for k in pointids
+#            if k in llpdict)
 # print(llpdict)
 
 ### ERA5-Land predictors
@@ -96,46 +84,49 @@ era5l0012 = [
     {'v10':'V10-MS:ERA5L:5022:1:0:1:0'}, # 10 metre V wind component (m s-1)  
 ]
 
-y_start = '2015'
-y_end = '2022'
-rr_yrs = list(range(int(y_start),int(y_end)+1))
-nan = float('nan')
-source = 'desm.harvesterseasons.com:8080'
 
 ### 00 UTC parameters (24h accumulated)
 hour = '00'
-
-# end = '20221231T000000Z'
 start = '20150101T000000Z'
-end = '20150131T000000Z'
-# end = '20221231T000000Z'
-df = pd.DataFrame()
+end = '20221231T000000Z'
+# function to merge dfs
+def merge_df(df1,df2):
+    if df1.empty:
+        df = pd.concat([df1,df2],axis=1)
+        # df = df.T.drop_duplicates().T
+    else:
+        df = pd.merge(df1, df2, how='inner', on=['utctime','latitude','longitude','pointID'])
+    return df
+
+def multi_merger_df(data_frames):
+    df =reduce(lambda  left,right: pd.merge(left,
+                                                  right,
+                                                  on=['utctime','latitude','longitude','pointID'],
+                                            how='inner'), data_frames)
+    return df
+
+era5l00_df = pd.DataFrame()
 for pardict in era5l00:
     key,value = list(pardict.items())[0]
     print(source,start,end,hour,pardict,llpdict)
     temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
-    if df.empty:
-        df = pd.concat([df,temp_df],axis=1)
-        # df = df.T.drop_duplicates().T
-    else:
-        df = pd.merge(df, temp_df, how='inner', on=['utctime','latitude','longitude','pointID'])
-    # print(key)
+    era5l00_df = merge_df(era5l00_df,temp_df)
+print("*******************era5l00_df*********************")
+print(era5l00_df.head())
+# convert point id to int
 
+era5l00_df['pointID'] = era5l00_df['pointID'].astype('Int64')
 
-
-
-df['utctime']=df['utctime'].dt.date
-'''
+era5l0012_df = pd.DataFrame()
 ### 00 and 12 UTC parameters
 for pardict in era5l0012:
     hour = '00'
-    
     key,value = list(pardict.items())[0]
     temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     temp_df.rename({key:key+'-00'}, axis=1, inplace=True)
     print("**********00 and 12 UTC parameters****************")
     temp_df['utctime']=temp_df['utctime'].dt.date
-    df = pd.merge(df, temp_df, how='inner', on=['utctime','latitude','longitude','pointID'])
+    era5l0012_df = merge_df(era5l0012_df,temp_df)
 
     hour = '12'
     
@@ -145,91 +136,100 @@ for pardict in era5l0012:
     
     temp_df.rename({key:key+'-12'}, axis=1, inplace=True)
    
-    df = pd.merge(df, temp_df, how='inner', on=['utctime','latitude','longitude','pointID'])
-    
+    era5l0012_df = merge_df(era5l0012_df,temp_df)
+
+print("*******************era5l0012_df*********************")
+print(era5l0012_df.head())
+
+era5l0012_df['pointID'] = era5l0012_df['pointID'].astype('Int64')
+era5l0012_df['utctime'] = pd.to_datetime(era5l0012_df['utctime'])
+
+### Rolling cumsums
+hour='00'
+start='20140901T000000Z'
+end='20221231T000000Z'
+
+def get_rolling_mean(start,
+                     end,
+                     hour,
+                     config_dict,
+                     llpdict,
+                     rolling_days,
+                     column_name):
+    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,config_dict,llpdict)    
+    df.set_index('utctime',inplace=True)
+    final_rolling_df = pd.DataFrame()
+    for each_day in rolling_days:
+        each_days = str(each_day)+'d'
+        rolling_df = fcts.rolling_cumsum(df.copy(),each_days,column_name)
+        final_rolling_df = merge_df(final_rolling_df,rolling_df)
+    return final_rolling_df
+
+ro_df = get_rolling_mean(start=start,
+                          end=end,
+                          hour=hour,
+                          config_dict={'ro':'RO-M:ERA5L:5022:1:0:1:0'},
+                          llpdict=llpdict,
+                          rolling_days=[5],
+                          column_name='ro'
+                          )
+
+sro_df = get_rolling_mean(start=start,
+                          end=end,
+                          hour=hour,
+                          config_dict={'sro':'SRO-M:ERA5L:5022:1:0:1:0'},
+                          llpdict=llpdict,
+                          rolling_days=[5],
+                          column_name='sro'
+                          )
+
+ssro_df = get_rolling_mean(start=start,
+                          end=end,
+                          hour=hour,
+                          config_dict={'ssro':'SSRO-M:ERA5L:5022:1:0:1:0'},
+                          llpdict=llpdict,
+                          rolling_days=[5],
+                          column_name='ssro'
+                          )
+
+evapp_df = get_rolling_mean(start=start,
+                          end=end,
+                          hour=hour,
+                          config_dict={'evapp':'EVAPP-M:ERA5L:5022:1:0:1:0'},
+                          llpdict=llpdict,
+                          rolling_days=[5],
+                          column_name='evapp'
+                          )
+
+tp_df = get_rolling_mean(start=start,
+                          end=end,
+                          hour=hour,
+                          config_dict={'tp':'RR-M:ERA5L:5022:1:0:1:0'},
+                          llpdict=llpdict,
+                          rolling_days=[5],
+                          column_name='tp'
+                          )
 
 
-# start = '20140901T000000Z'
-# end = '20161231T000000Z'
-'''
-hour = '00'
-start = '20150101T000000Z'
-end = '20150131T000000Z'
-# end = '20221231T000000Z'
+# combine all rolling df's
+
+data_frames = [ro_df,sro_df,ssro_df,evapp_df,tp_df]
+
+rolling_dfs = multi_merger_df(data_frames=data_frames)
+
+# convert utctime to datatime after merging in the previous step it is becoming object
+rolling_dfs['utctime'] = pd.to_datetime(rolling_dfs['utctime'])
+
+# combine time series data
+
+time_series_frames = [era5l00_df,era5l0012_df,rolling_dfs]
+
+print(era5l0012_df.info())
+
+time_series_df = multi_merger_df(data_frames=time_series_frames)
+
+# save time_series_df 
+
+time_series_df.to_csv("/home/ubuntu/data/ML/training-data/soiltemp/timeseries_features.csv",index=False)
 
 
-### Runoff rolling cumsums fot t-5, t-15, t-60 and t-100 days
-rodict = {'ro':'RO-M:ERA5L:5022:1:0:1:0'} # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
-ro_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,rodict,llpdict)    
-ro_df = ro_df.set_index('utctime')
-ro_df['utctime']=pd.to_datetime(ro_df.index)
-print(ro_df)
-# roll_df = pd.merge(roll_df, temp_df, how='inner', on=['utctime','latitude','longitude','pointID']) 
-
-temp_df5 = fcts.rolling_cumsum(ro_df.copy(),'5d','ro')
-print(temp_df5)
-'''
-temp_df15 = fcts.rolling_cumsum(df.copy(),'15d','ro')
-temp_df60 = fcts.rolling_cumsum(df.copy(),'60d','ro')
-temp_df100 = fcts.rolling_cumsum(df.copy(),'100d','ro')
-temp_df = temp_df.loc[(temp_df['utctime'] >= '2015-01-01')] 
-df = pd.merge(df, temp_df, how='inner', on=['utctime','latitude','longitude','pointID']) 
-
-### Surface runoff rolling cumsums fot t-5, t-15, t-60 and t-100 days
-srodict = {'sro':'SRO-M:ERA5L:5022:1:0:1:0'} # Surface runoff (m)
-temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,srodict,llpdict)    
-temp_df = df.set_index('utctime')
-temp_df['utctime'] = pd.to_datetime(temp_df.index)
-temp_df5 = fcts.rolling_cumsum(df.copy(),'5d','sro')
-temp_df15 = fcts.rolling_cumsum(df.copy(),'15d','sro')
-temp_df60 = fcts.rolling_cumsum(df.copy(),'60d','sro')
-temp_df100 = fcts.rolling_cumsum(df.copy(),'100d','sro')
-temp_df = temp_df.loc[(temp_df['utctime'] >= '2015-01-01')] 
-
-### Sub-surface runoff rolling cumsums fot t-5, t-15, t-60 and t-100 days
-ssrodict = {'ssro':'SSRO-M:ERA5L:5022:1:0:1:0'} # Sub-surface runoff (m)  
-temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,ssrodict,llpdict)    
-temp_df = temp_df.set_index('utctime')
-temp_df['utctime'] = pd.to_datetime(temp_df.index)
-temp_df5 = fcts.rolling_cumsum(temp_df.copy(),'5d','ssro')
-temp_df15 = fcts.rolling_cumsum(temp_df.copy(),'15d','ssro')
-temp_df60 = fcts.rolling_cumsum(temp_df.copy(),'60d','ssro')
-temp_df100 = fcts.rolling_cumsum(temp_df.copy(),'100d','ssro')
-temp_df = temp_df.loc[(temp_df['utctime'] >= '2015-01-01')]
-
-### Potential evaporation rolling cumsums fot t-5, t-15, t-60 and t-100 days
-pevdict = {'evapp':'EVAPP-M:ERA5L:5022:1:0:1:0'} # Potential evaporation (m)
-df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pevdict,llpdict)    
-df = df.set_index('utctime')
-df['utctime'] = pd.to_datetime(df.index)
-df5 = fcts.rolling_cumsum(df.copy(),'5d','evapp')
-df15 = fcts.rolling_cumsum(df.copy(),'15d','evapp')
-df60 = fcts.rolling_cumsum(df.copy(),'60d','evapp')
-df100 = fcts.rolling_cumsum(df.copy(),'100d','evapp')
-df = df.loc[(df['utctime'] >= '2015-01-01')]   
-
-### Evaporation rolling cumsums fot t-5, t-15, t-60 and t-100 days
-evapdict = {'evap':'EVAP-M:ERA5L:5022:1:0:1:0'} # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
-temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,evapdict,llpdict)    
-temp_df = temp_df.set_index('utctime')
-temp_df['utctime']=pd.to_datetime(temp_df.index)
-temp_df5 = fcts.rolling_cumsum(temp_df.copy(),'5d','evap')
-temp_df15 = fcts.rolling_cumsum(temp_df.copy(),'15d','evap')
-temp_df60 = fcts.rolling_cumsum(temp_df.copy(),'60d','evap')
-temp_df100 = fcts.rolling_cumsum(temp_df.copy(),'100d','evap')
-temp_df = temp_df.loc[(temp_df['utctime'] >= '2015-01-01')]   
-
-### Precipitation rolling cumsums fot t-5, t-15, t-60 and t-100 days
-tpdict = {'tp':'RR-M:ERA5L:5022:1:0:1:0'} # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
-df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,tpdict,llpdict)    
-df = df.set_index('utctime')
-df['utctime'] = pd.to_datetime(df.index)
-df5 = fcts.rolling_cumsum(df.copy(),'5d','tp')
-df15 = fcts.rolling_cumsum(df.copy(),'15d','tp')
-df60 = fcts.rolling_cumsum(df.copy(),'60d','tp')
-df100 = fcts.rolling_cumsum(df.copy(),'100d','tp')
-df = df.loc[(df['utctime'] >= '2015-01-01')]   
-
-executionTime = (time.time()-startTime)
-print('Execution time in minutes: %.2f'%(executionTime/60))
-'''
