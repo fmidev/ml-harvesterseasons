@@ -21,12 +21,17 @@ path_eu_data = "/home/ubuntu/ml-harvesterseasons/soil_temperature/data/Europe_so
 eu_data = pd.read_csv(path_eu_data,sep=";")
 pd.options.display.max_columns = None
 
+
 #remove nan values in df
 
 eu_data = eu_data.dropna(subset=['site_lat','site_long'])
 
-eu_data = eu_data[:5999]  # take only first 6k
-pointids = list(range(1,6000)) 
+# remove duplicate long,lat 
+
+eu_data = eu_data.drop_duplicates(subset=['site_lat','site_long'])
+
+
+pointids = list(range(len(eu_data))) 
 eu_data['pointID'] = pointids
 
 # save utc_time as df,create month column

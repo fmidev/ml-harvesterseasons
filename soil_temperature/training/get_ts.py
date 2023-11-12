@@ -21,11 +21,16 @@ pd.options.display.max_columns = None
 
 eu_data = eu_data.dropna(subset=['site_lat','site_long'])
 
+# remove duplicate long,lat 
+
+eu_data = eu_data.drop_duplicates(subset=['site_lat','site_long'])
+
 lat = eu_data['site_lat'].tolist()
 lon = eu_data['site_long'].tolist()
 # points=lucas_df['POINT_ID'].values.tolist()
-pointids = list(range(1,6000)) # can only accomodate some , setting to 6000
-# print(lon[:5]) 
+
+pointids = list(range(len(eu_data)))
+# pointids = list(range(1,6000)) # can only acc  vö
 
 
 llpdict = {i:[j, k] for i, j, k in zip(pointids,lat, lon)}

@@ -13,11 +13,14 @@ eu_data = pd.read_csv(path_eu_data,sep=";")
 
 eu_data = eu_data.dropna(subset=['site_lat','site_long'])
 
+# remove duplicate long,lat 
+
+eu_data = eu_data.drop_duplicates(subset=['site_lat','site_long'])
+
 lat = eu_data['site_lat'].tolist()
 lon = eu_data['site_long'].tolist()
 
 long_lat = eu_data[['site_long','site_lat']].values.tolist()
-long_lat = long_lat[:5999]
 
 height_file = "/home/ubuntu/data/ml-harvestability/training/Europe-dtm.vrt"
 tcd_file = "/home/ubuntu/data/ml-harvestability/training/eu.vrt"
@@ -111,23 +114,23 @@ def get_feature_values(long_lat):
 
     for i in  tqdm(range(0,len(long_lat)),desc ="Processing locations"):
         print(long_lat[i][0],long_lat[i][1])
-        results_for_tcd = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[0]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_for_waw = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[1]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_for_height = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[2]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_for_slope = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[3]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_for_aspect = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[4]} {long_lat[i][0]} {long_lat[i][1]}").read()
+        results_for_tcd = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[0]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_for_waw = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[1]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_for_height = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[2]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_for_slope = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[3]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_for_aspect = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[4]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
         ##
-        results_sand_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[5]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_sand_5_15_file= os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[6]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_silt_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[7]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_silt_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[8]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_clay_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[9]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_clay_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[10]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_soc_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[11]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_soc_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[12]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_meanT_warmestQ_0_5cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[13]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_meanT_warmestQ_5_15cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[14]} {long_lat[i][0]} {long_lat[i][1]}").read()
-        results_mean_diurnal_0_5cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[15]} {long_lat[i][0]} {long_lat[i][1]}").read()
+        results_sand_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[5]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_sand_5_15_file= os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[6]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_silt_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[7]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_silt_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[8]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_clay_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[9]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_clay_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[10]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_soc_0_5_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[11]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_soc_5_15_file = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[12]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_meanT_warmestQ_0_5cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[13]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_meanT_warmestQ_5_15cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[14]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
+        results_mean_diurnal_0_5cm = os.popen(f"gdallocationinfo -valonly -wgs84 {feature_files[15]} {long_lat[i][0]} {long_lat[i][1]}").read().strip()
 
         if results_for_tcd and results_for_waw and results_for_height and results_for_slope and results_for_aspect and results_sand_0_5_file and results_sand_5_15_file and results_silt_0_5_file and results_silt_5_15_file and results_clay_0_5_file and results_clay_5_15_file and results_soc_0_5_file and results_soc_5_15_file and results_meanT_warmestQ_0_5cm and results_meanT_warmestQ_5_15cm and results_mean_diurnal_0_5cm:
             result_for_tcd = int(results_for_tcd)
@@ -165,18 +168,16 @@ def get_feature_values(long_lat):
                             results_meanT_warmestQ_0_5cm,
                             results_meanT_warmestQ_5_15cm,
                             results_mean_diurnal_0_5cm])
-        else:
-            nan.append([long_lat[i][0],long_lat[i][1],0])
-    return results,nan
+        # else:
+        #     nan.append([long_lat[i][0],long_lat[i][1],0])
+    return results
 
 
 def traverse_latlong(x_y):
     
-    feature_list,nan = get_feature_values(x_y)
+    feature_list = get_feature_values(x_y)
 
-    non_nan_df = pd.DataFrame(feature_list,columns=feature_cols)
-    nan_df = pd.DataFrame(nan,columns=feature_cols)
-    feature_df = pd.concat([non_nan_df,nan_df])
+    feature_df = pd.DataFrame(feature_list,columns=feature_cols)
 
     write_to_csv(feature_df)
 
