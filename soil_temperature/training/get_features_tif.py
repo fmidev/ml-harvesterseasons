@@ -17,10 +17,15 @@ eu_data = eu_data.dropna(subset=['site_lat','site_long'])
 
 eu_data = eu_data.drop_duplicates(subset=['site_lat','site_long'])
 
+
 lat = eu_data['site_lat'].tolist()
 lon = eu_data['site_long'].tolist()
 
-long_lat = eu_data[['site_long','site_lat']].values.tolist()
+point_ids = list(range(len(eu_data))) 
+eu_data['pointID'] = point_ids
+long_lat = eu_data[['site_long','site_lat','pointID']].values.tolist()
+
+
 
 height_file = "/home/ubuntu/data/ml-harvestability/training/Europe-dtm.vrt"
 tcd_file = "/home/ubuntu/data/ml-harvestability/training/eu.vrt"
@@ -47,7 +52,7 @@ feature_cols = ["long","lat","TCD","WAW","DTM_height",
                 "sand_5_15cm_mean","silt_0_5cm_mean","silt_5_15cm_mean",
                 "clay_0_5cm_mean","clay_5_15cm_mean","soc_0_5cm_mean",
                 "soc_5_15cm_mean","meanT_warmestQ_5_15cm",
-                "meanT_warmestQ_0_5cm","mean_diurnal_0_5cm"]
+                "meanT_warmestQ_0_5cm","mean_diurnal_0_5cm","pointID"]
 
 feature_file_soiltemp = open(soiltemp_file,"w")
 
@@ -77,6 +82,7 @@ feature_files = [
 def write_to_csv(df_to_write):
     long_values = df_to_write["long"].values.tolist()
     lat_values = df_to_write["lat"].values.tolist()
+    point_ids = df_to_write["pointID"].values.tolist()
     tcd = df_to_write["TCD"].values.tolist()
     waw = df_to_write["WAW"].values.tolist()
     height = df_to_write["DTM_height"].values.tolist()
@@ -102,7 +108,7 @@ def write_to_csv(df_to_write):
                               ','+str(sand_5_15[i])+','+str(silt_0_5[i])+','+str(silt_5_15[i])+
                               ','+str(clay_0_5[i])+','+str(clay_5_15[i])+','+str(soc_0_5[i])+
                               ','+str(soc_5_15[i])+','+str(meanT_warmestQ_5_15cm[i])+','+str(meanT_warmestQ_0_5cm[i])+
-                              ','+str(mean_diurnal_0_5cm[i]))
+                              ','+str(mean_diurnal_0_5cm[i])+','+str(point_ids[i]))
         feature_file_soiltemp.write("\n")
     feature_file_soiltemp.close()
 
@@ -167,7 +173,8 @@ def get_feature_values(long_lat):
                             result_for_soc_5_15,
                             results_meanT_warmestQ_0_5cm,
                             results_meanT_warmestQ_5_15cm,
-                            results_mean_diurnal_0_5cm])
+                            results_mean_diurnal_0_5cm,
+                            int(long_lat[i][2])]) # point ID
         # else:
         #     nan.append([long_lat[i][0],long_lat[i][1],0])
     return results
@@ -220,7 +227,9 @@ def get_time_values(station_features):
             new_df.loc[j, "meanT_warmestQ_5_15cm"] = station_features.loc[i, "meanT_warmestQ_5_15cm"]
             new_df.loc[j, "meanT_warmestQ_0_5cm"] = station_features.loc[i, "meanT_warmestQ_0_5cm"]
             new_df.loc[j, "mean_diurnal_0_5cm"] = station_features.loc[i, "mean_diurnal_0_5cm"]
+            new_df.loc[j, "pointID"] = station_features.loc[i, "pointID"]
             new_df.loc[j,'utctime'] = utc_time_df.loc[j,'utctime']
+            
         final_df = pd.concat([final_df, new_df], axis=0)
     return final_df
 
