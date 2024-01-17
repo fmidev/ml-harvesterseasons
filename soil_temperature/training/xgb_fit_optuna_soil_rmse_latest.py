@@ -19,11 +19,6 @@ optuna_dir='/home/ubuntu/data/ML/' # optuna storage
 os.chdir(optuna_dir)
 print(os.getcwd())
 
-# mean absolute error as measuring metric
-def mae(preds, train_data):
-    labels = train_data.get_label()
-    MAE = mean_absolute_error(labels, preds)
-    return 'MAE', MAE, False
 
 ### optuna objective & xgboost
 def objective(trial):
@@ -40,7 +35,7 @@ def objective(trial):
         "n_jobs":64,
         "random_state":99,
         #"early_stopping_rounds":50,
-        "eval_metric":'mae'
+        "eval_metric":"rmse"
     }
     eval_set=[(valid_x,valid_y)]
 
@@ -48,23 +43,23 @@ def objective(trial):
     bst = xgbr.fit(train_x,train_y,eval_set=eval_set)
     preds = bst.predict(valid_x)
     pred_labels = np.rint(preds)
-    accuracy = mean_absolute_error(valid_y,preds)
+    accuracy = np.sqrt(mean_squared_error(valid_y,preds))
     print("accuracy: "+str(accuracy))
     return accuracy
 
 ### Read in training data, split to preds and varssoiltemp
-cols_own=['utctime','slhf','sshf','ssrd','strd','str','ssr','sktn','sktd-12',
-          'sf','laihv-00','laihv-12','lailv-00','lailv-12','sd-00','sd-12',
-          'rsn-00','rsn-12','stl1-00','stl1-12','swvl2-00','swvl2-12','t2-00',
-          't2-12','td2-00','td2-12','u10-00','u10-12','v10-00','v10-12','ro5d',
-          'sro5d','ssro5d','evapp5d','tp5d','Forest_T_Min','Forest_T_Max','Forest_T_Mean',
-          'longitude','latitude','TCD','WAW','DTM_height','DTM_slope','DTM_aspect','sand_0_5cm_mean',
-          'sand_5_15cm_mean','silt_0_5cm_mean','silt_5_15cm_mean','clay_0_5cm_mean','clay_5_15cm_mean',
-          'soc_0_5cm_mean','soc_5_15cm_mean','meanT_warmestQ_5_15cm','meanT_warmestQ_0_5cm',
-          'mean_diurnal_0_5cm','clim_ts_value'
+cols_own=["utctime","slhf","sshf",
+        "ssrd","strd","str","ssr","skt-00",
+        "sktn","laihv-00",
+        "lailv-00",
+        "sd-00","rsn-00",
+        "stl1-00","stl2-00","swvl2-00",
+        "t2-00","td2-00","u10-00",
+        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
+        "DTM_aspect","clim_ts_value"
 ]
 #fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
-fname='train_data.csv' # input training dataset
+fname='train_data_latest.csv' # input training dataset
 
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
@@ -92,15 +87,15 @@ for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
 # split data to predidctors (preds) and variable to be predicted (var)
-preds=['slhf','sshf','ssrd','strd','str','ssr',
-          'sf','laihv-00','laihv-12','lailv-00','lailv-12','sd-00','sd-12','sktn','sktd-12',
-          'rsn-00','rsn-12','stl1-00','stl1-12','swvl2-00','swvl2-12','t2-00',
-          't2-12','td2-00','td2-12','u10-00','u10-12','v10-00','v10-12','ro5d',
-          'sro5d','ssro5d','evapp5d','tp5d','Forest_T_Min','Forest_T_Max','Forest_T_Mean',
-          'longitude','latitude','TCD','WAW','DTM_height','DTM_slope','DTM_aspect','sand_0_5cm_mean',
-          'sand_5_15cm_mean','silt_0_5cm_mean','silt_5_15cm_mean','clay_0_5cm_mean','clay_5_15cm_mean',
-          'soc_0_5cm_mean','soc_5_15cm_mean','meanT_warmestQ_5_15cm','meanT_warmestQ_0_5cm',
-          'mean_diurnal_0_5cm','dayOfYear'
+preds=["slhf","sshf",
+        "ssrd","strd","str","ssr","skt-00",
+        "sktn","laihv-00",
+        "lailv-00",
+        "sd-00","rsn-00",
+        "stl1-00","stl2-00","swvl2-00",
+        "t2-00","td2-00","u10-00",
+        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
+        "DTM_aspect",'dayOfYear'
 ]
 var=['clim_ts_value']
 train_x=train_stations[preds] 
@@ -110,7 +105,7 @@ valid_y=test_stations[var]
 train_x=train_x.astype(float)
     
 ### Optuna trials
-study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="xgb-soiltemp-6",direction="minimize",load_if_exists=True)
+study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="xgb-soiltemp-rmse-latest-1",direction="minimize",load_if_exists=True)
 study.optimize(objective, n_trials=100, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))

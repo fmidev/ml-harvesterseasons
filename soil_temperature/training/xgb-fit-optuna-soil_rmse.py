@@ -19,11 +19,6 @@ optuna_dir='/home/ubuntu/data/ML/' # optuna storage
 os.chdir(optuna_dir)
 print(os.getcwd())
 
-# mean absolute error as measuring metric
-def mae(preds, train_data):
-    labels = train_data.get_label()
-    MAE = mean_absolute_error(labels, preds)
-    return 'MAE', MAE, False
 
 ### optuna objective & xgboost
 def objective(trial):
@@ -40,7 +35,7 @@ def objective(trial):
         "n_jobs":64,
         "random_state":99,
         #"early_stopping_rounds":50,
-        "eval_metric":'mae'
+        "eval_metric":"rmse"
     }
     eval_set=[(valid_x,valid_y)]
 
@@ -48,7 +43,7 @@ def objective(trial):
     bst = xgbr.fit(train_x,train_y,eval_set=eval_set)
     preds = bst.predict(valid_x)
     pred_labels = np.rint(preds)
-    accuracy = mean_absolute_error(valid_y,preds)
+    accuracy = np.sqrt(mean_squared_error(valid_y,preds))
     print("accuracy: "+str(accuracy))
     return accuracy
 
@@ -110,7 +105,7 @@ valid_y=test_stations[var]
 train_x=train_x.astype(float)
     
 ### Optuna trials
-study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="xgb-soiltemp-6",direction="minimize",load_if_exists=True)
+study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="xgb-soiltemp-rmse-1",direction="minimize",load_if_exists=True)
 study.optimize(objective, n_trials=100, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))

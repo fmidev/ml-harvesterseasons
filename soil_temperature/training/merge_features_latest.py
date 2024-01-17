@@ -9,7 +9,7 @@ import random
 warnings.filterwarnings("ignore")
 
 forest_temp_data = "/home/ubuntu/data/ML/training-data/soiltemp/forest_temp_features.csv"
-time_series_data = "/home/ubuntu/data/ML/training-data/soiltemp/timeseries_features.csv"
+time_series_data = "/home/ubuntu/data/ML/training-data/soiltemp/timeseries_features_latest.csv"
 tif_features_data = "/home/ubuntu/data/ML/training-data/soiltemp/soil_temp_tif_features_ts.csv"
 train_data = "/home/ubuntu/data/ML/training-data/soiltemp/train_data_latest.csv"
 soiltemp_path_1a = "/home/ubuntu/data/soiltempdb/Europe_soil_timeseries_1a.txt"

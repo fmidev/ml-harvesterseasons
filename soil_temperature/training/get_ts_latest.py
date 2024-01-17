@@ -30,7 +30,7 @@ lon = eu_data['site_long'].tolist()
 # points=lucas_df['POINT_ID'].values.tolist()
 
 pointids = list(range(len(eu_data)))
-# pointids = list(range(1,6000)) # can only acc  vö
+# pointids = list(range(1,6000)) # can only acc 
 
 
 llpdict = {i:[j, k] for i, j, k in zip(pointids,lat, lon)}
@@ -51,13 +51,21 @@ era5l00 = [
     {'strd':'RADLWA-JM2:ERA5L:5022:1:0:1:0'}, # Surface longwave radiation downwards (J m-2)  
     {'str':'RNETLWA-JM2:ERA5L:5022:1:0:1:0'}, # Net longwave radiation accumulation (J m-2)  
     {'ssr':'RNETSWA-JM2:ERA5L:5022:1:0:1:0'}, # Net shortwave radiation accumulation (J m-2)  
-    {'sf':'SNACC-KGM2:ERA5L:5022:1:0:1:0'}, # Snowfall (m of water eq)  
-    {'sktn':'SKT-K:LSASAFC:5064:1:0:0'}
+    #{'sf':'SNACC-KGM2:ERA5L:5022:1:0:1:0'}, # Snowfall (m of water eq)  
+    {'sktn':'SKT-K:LSASAFC:5064:1:0:0'}, # Skin temperature at night(K)
+    {'ro':'RO-M:ERA5L:5022:1:0:1:0'}, # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
+    #{'sro':'SRO-M:ERA5L:5022:1:0:1:0'}, # Surface runoff (m)
+    #{'ssro':'SSRO-M:ERA5L:5022:1:0:1:0'}, # Sub-surface runoff (m)
+    {'evapp':'EVAPP-M:ERA5L:5022:1:0:1:0'}, # Potential evaporation (m)
+    #{'evap':'EVAP-M:ERA5L:5022:1:0:1:0'}, # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
+    #{'tp':'RR-M:ERA5L:5022:1:0:1:0'}, # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
+
+
 ]
 
 # Hourly data
 era5l0012 = [
-    #{'skt':'SKT-K:ERA5L:5022:1:0:1:0'}, # Skin temperature (K)
+    {'skt':'SKT-K:ERA5L:5022:1:0:1:0'}, # Skin temperature (K)
     #{'fal':'ALBEDOSLR-0TO1:ERA5L:5022:1:0:1:0'}, # Forecast albedo (0-1)
     #{'asn':'ASN-0TO1:ERA5L:5022:1:0:1:0'}, # Snow albedo (0-1)
     #{'es':'ES-M:ERA5L:5022:1:0:1:0'}, # Snow evaporation (m of water eq.)
@@ -76,7 +84,7 @@ era5l0012 = [
     #{'snowc':'SNOWC:ERA5L:5022:1:0:0'}, # Snow cover (%)
     #{'src':'SRC-M:ERA5L:5022:1:0:1:0'}, # Skin reservoir content (m of water eq)
     {'stl1':'STL1-K:ERA5L:5022:9:7:1:0'}, # Soil temperature level 1 (K) 
-    #{'stl2':'TSOIL-K:ERA5L:5022:9:1820:1:0'}, # Soil temperature level 2 (K)
+    {'stl2':'TSOIL-K:ERA5L:5022:9:1820:1:0'}, # Soil temperature level 2 (K)
     #{'stl3':'STL3-K:ERA5L:5022:9:7268:1:0'}, # Soil temperature level 3 (K)
     #{'stl4':'STL4-K:ERA5L:5022:9:25855:1:0'}, # Soil temperature level 4 (K)
     #{'swvl1':'SOILWET-M3M3:ERA5L:5022:9:7:1:0'}, # Soil wetness layer 1 (m3 m-3)  
@@ -133,7 +141,7 @@ for pardict in era5l0012:
     print("**********00 and 12 UTC parameters****************")
     temp_df['utctime']=temp_df['utctime'].dt.date
     era5l0012_df = merge_df(era5l0012_df,temp_df)
-
+    '''
     hour = '12'
     
     temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
@@ -143,7 +151,8 @@ for pardict in era5l0012:
     temp_df.rename({key:key+'-12'}, axis=1, inplace=True)
    
     era5l0012_df = merge_df(era5l0012_df,temp_df)
-
+    '''
+'''
 lsasaf0012 = [{'sktd':'SKT-K:LSASAFC:5064:1:0:0'},
              ] # Skin temperature (K) 
 start = '20150101T120000Z' 
@@ -159,92 +168,16 @@ for pardict in lsasaf0012:
     temp_df.rename({key:key+'-12'}, axis=1, inplace=True)
    
     era5l0012_df = merge_df(era5l0012_df,temp_df)
-
+'''
 print("*******************era5l0012_df*********************")
 print(era5l0012_df.head())
 
 era5l0012_df['pointID'] = era5l0012_df['pointID'].astype('Int64')
 era5l0012_df['utctime'] = pd.to_datetime(era5l0012_df['utctime'])
 
-### Rolling cumsums
-hour='00'
-start='20140901T000000Z'
-end='20221231T000000Z'
-
-def get_rolling_mean(start,
-                     end,
-                     hour,
-                     config_dict,
-                     llpdict,
-                     rolling_days,
-                     column_name):
-    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,config_dict,llpdict)    
-    df.set_index('utctime',inplace=True)
-    final_rolling_df = pd.DataFrame()
-    for each_day in rolling_days:
-        each_days = str(each_day)+'d'
-        rolling_df = fcts.rolling_cumsum(df.copy(),each_days,column_name)
-        final_rolling_df = merge_df(final_rolling_df,rolling_df)
-    return final_rolling_df
-
-ro_df = get_rolling_mean(start=start,
-                          end=end,
-                          hour=hour,
-                          config_dict={'ro':'RO-M:ERA5L:5022:1:0:1:0'},
-                          llpdict=llpdict,
-                          rolling_days=[5],
-                          column_name='ro'
-                          )
-
-sro_df = get_rolling_mean(start=start,
-                          end=end,
-                          hour=hour,
-                          config_dict={'sro':'SRO-M:ERA5L:5022:1:0:1:0'},
-                          llpdict=llpdict,
-                          rolling_days=[5],
-                          column_name='sro'
-                          )
-
-ssro_df = get_rolling_mean(start=start,
-                          end=end,
-                          hour=hour,
-                          config_dict={'ssro':'SSRO-M:ERA5L:5022:1:0:1:0'},
-                          llpdict=llpdict,
-                          rolling_days=[5],
-                          column_name='ssro'
-                          )
-
-evapp_df = get_rolling_mean(start=start,
-                          end=end,
-                          hour=hour,
-                          config_dict={'evapp':'EVAPP-M:ERA5L:5022:1:0:1:0'},
-                          llpdict=llpdict,
-                          rolling_days=[5],
-                          column_name='evapp'
-                          )
-
-tp_df = get_rolling_mean(start=start,
-                          end=end,
-                          hour=hour,
-                          config_dict={'tp':'RR-M:ERA5L:5022:1:0:1:0'},
-                          llpdict=llpdict,
-                          rolling_days=[5],
-                          column_name='tp'
-                          )
-
-
-# combine all rolling df's
-
-data_frames = [ro_df,sro_df,ssro_df,evapp_df,tp_df]
-
-rolling_dfs = multi_merger_df(data_frames=data_frames)
-
-# convert utctime to datatime after merging in the previous step it is becoming object
-rolling_dfs['utctime'] = pd.to_datetime(rolling_dfs['utctime'])
-
 # combine time series data
 
-time_series_frames = [era5l00_df,era5l0012_df,rolling_dfs]
+time_series_frames = [era5l00_df,era5l0012_df]
 
 print(era5l0012_df.info())
 
@@ -252,6 +185,6 @@ time_series_df = multi_merger_df(data_frames=time_series_frames)
 
 # save time_series_df 
 
-time_series_df.to_csv("/home/ubuntu/data/ML/training-data/soiltemp/timeseries_features.csv",index=False)
+time_series_df.to_csv("/home/ubuntu/data/ML/training-data/soiltemp/timeseries_features_latest.csv",index=False)
 
 
