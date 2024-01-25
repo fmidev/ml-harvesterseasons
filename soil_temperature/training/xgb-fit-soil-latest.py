@@ -119,9 +119,9 @@ xgbr.save_model(f"{mod_dir}/xgbmodel_soiltemp_latest_{date_time}.json")
 
 print("RMSE: %.5f" % (np.sqrt(mse)))
 # print("MAE: %.5f" % (mae))
-plt.rcParams["figure.figsize"] = (18, 14)
-plot_importance(xgbr,grid=False)
-plt.savefig(plot_dir+'soil_temperature_importance_latest.jpg',bbox_inches='tight'
+plt.rcParams["figure.figsize"] = (6, 10)
+plot_importance(xgbr,height=0.4,grid=False)
+plt.savefig(plot_dir+'soil_temperature_importance_latest_1.jpg',bbox_inches='tight'
             )
 
 executionTime=(time.time()-startTime)
