@@ -3,11 +3,12 @@ import sklearn.datasets
 import sklearn.metrics
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import pandas as pd
-import xgboost as xgb
+import lightgbm as lgb
+import math
 from sklearn.model_selection import GridSearchCV
 import numpy as np
 warnings.filterwarnings("ignore")
-### XGBoost with Optuna hyperparameter tuning for soiltempearture ML model
+### XGBoost with Optuna hyperparameter tuning for swi2 ML model
 # note: does not save trained mdl
 startTime=time.time()
 
@@ -19,35 +20,38 @@ optuna_dir='/home/ubuntu/data/ML/' # optuna storage
 os.chdir(optuna_dir)
 print(os.getcwd())
 
-
+def rmse(preds, train_data):
+    labels = train_data.get_label()
+    MSE = mean_squared_error(labels, preds)
+    RMSE = math.sqrt(MSE)
+    return 'RMSE', RMSE, False
 ### optuna objective & xgboost
 def objective(trial):
     # hyperparameters
-    param = {
-        "objective":"reg:squarederror",
-        "num_parallel_tree":trial.suggest_int("number_parallel_tree", 1, 10),
-        "max_depth":trial.suggest_int("max_depth",3,18),
-        "subsample":trial.suggest_float("subsample",0.01,1),
-        "learning_rate":trial.suggest_float("learning_rate",0.01,0.7),
-        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.01, 1.0),
-        "n_estimators":trial.suggest_int("n_estimators",50,1000),
-        "alpha":trial.suggest_float("alpha", 0.000000001, 1.0),
-        "n_jobs":64,
-        "random_state":99,
-        #"early_stopping_rounds":50,
-        "eval_metric":"rmse"
-    }
-    eval_set=[(valid_x,valid_y)]
+    lgb_params = {'objective' :'regression',
+              'num_leaves': trial.suggest_int("num_leaves", 2, 50),
+              'n_estimators':trial.suggest_int("n_estimators",50,1000),
+              'learning_rate': trial.suggest_float("learning_rate",0.01,0.7),
+              'feature_fraction': trial.suggest_float("feature_fraction",0.01,1.0),
+              'max_depth': trial.suggest_int("max_depth",3,18),
+              'reg_alpha':trial.suggest_float("reg_alpha", 0.000000001, 1.0),
+              'n_jobs':64,
+              'random_state':99,
+              'subsample':trial.suggest_float("subsample",0.01,1),
+              'verbose': 100,
+              'num_boost_round': 10000,
+              'nthread':trial.suggest_int("nthread", 1, 10)}
 
-    xgbr=xgb.XGBRegressor(**param)
-    bst = xgbr.fit(train_x,train_y,eval_set=eval_set)
+    bst=lgb.train(lgb_params,dtrain,feval=rmse,valid_sets=[dvalid])
     preds = bst.predict(valid_x)
-    pred_labels = np.rint(preds)
     accuracy = np.sqrt(mean_squared_error(valid_y,preds))
     print("accuracy: "+str(accuracy))
     return accuracy
 
-### Read in training data, split to preds and varssoiltemp
+
+### Read in training data, split to preds and vars
+
+
 cols_own=["utctime","slhf","sshf",
         "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
@@ -58,23 +62,19 @@ cols_own=["utctime","slhf","sshf",
         "v10-00","ro","evapp","DTM_height","DTM_slope",
         "DTM_aspect","clim_ts_value"
 ]
-#fname='swi2_training_10000lucasPoints_2015-2022_all_fixed.csv'
-fname='train_data_latest_additional.csv' # input training dataset
 
+fname = "train_data_latest_additional.csv"
+print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
-# remove outliers, take value between -42 and 42
 df =df.loc[(df["clim_ts_value"]>= -42) & (df["clim_ts_value"]<= 42)]
-        
 # add day of year to predictors
 df['utctime']=pd.to_datetime(df['utctime'])
 df['dayOfYear'] = df['utctime'].dt.dayofyear
-
 print(df)
 
 
 df=df.fillna(-999)
-
 
 # Split to train and test by years, KFold for best split (k=5)
 test_y=[2019,2021]
@@ -87,6 +87,7 @@ for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
 # split data to predidctors (preds) and variable to be predicted (var)
+
 preds=["slhf","sshf",
         "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
@@ -97,15 +98,19 @@ preds=["slhf","sshf",
         "v10-00","ro","evapp","DTM_height","DTM_slope",
         "DTM_aspect",'dayOfYear'
 ]
+
 var=['clim_ts_value']
 train_x=train_stations[preds] 
 valid_x=test_stations[preds]
 train_y=train_stations[var]
 valid_y=test_stations[var]
 train_x=train_x.astype(float)
+
+dtrain = lgb.Dataset(train_x, label=train_y)
+dvalid = lgb.Dataset(valid_x,label=valid_y)
     
 ### Optuna trials
-study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="xgb-soiltemp-rmse-latest-stations-2",direction="minimize",load_if_exists=True)
+study = optuna.create_study(storage="sqlite:///MLexperiments.sqlite3",study_name="lgbm-soiltemp-rmse-latest-2",direction="minimize",load_if_exists=True)
 study.optimize(objective, n_trials=100, timeout=432000)
 
 print("Number of finished trials: ", len(study.trials))

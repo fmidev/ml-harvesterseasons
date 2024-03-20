@@ -20,17 +20,16 @@ plot_dir='/home/ubuntu/ml-harvesterseasons/soil_temperature/plots/'
 
 ### Read in 2D tabular training data
 cols_own=["utctime","slhf","sshf",
-        "ssrd","strd","str","ssr","skt-00",
+        "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
         "lailv-00",
         "sd-00","rsn-00",
         "stl1-00","stl2-00","swvl2-00",
         "t2-00","td2-00","u10-00",
-        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
+        "v10-00","ro","evapp","DTM_height","DTM_slope",
         "DTM_aspect","clim_ts_value"
 ]
-
-fname='train_data_latest.csv' # training data csv filename
+fname='train_data_latest_additional.csv' # training data csv filename
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
@@ -56,15 +55,15 @@ for y in test_y:
 
 # split data to predictors (preds), and variable to be predicted (var)
 preds=["slhf","sshf",
-        "ssrd","strd","str","ssr","skt-00",
+        "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
         "lailv-00",
         "sd-00","rsn-00",
         "stl1-00","stl2-00","swvl2-00",
         "t2-00","td2-00","u10-00",
-        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
+        "v10-00","ro","evapp","DTM_height","DTM_slope",
         "DTM_aspect",'dayOfYear'
-]
+        ]
 var=['clim_ts_value']
 preds_train=train_stations[preds] 
 preds_test=test_stations[preds]
@@ -115,13 +114,13 @@ now = datetime.now()
 date_time = now.strftime("%m%d%Y%H%M%S")
 
 print("---Saving model---")
-xgbr.save_model(f"{mod_dir}/xgbmodel_soiltemp_latest_mae_{date_time}.json")
+# xgbr.save_model(f"{mod_dir}/xgbmodel_soiltemp_latest_mae_{date_time}.json")
 
 # print("RMSE: %.5f" % (np.sqrt(mse)))
 print("MAE: %.5f" % (mae))
-plt.rcParams["figure.figsize"] = (18, 14)
+plt.rcParams["figure.figsize"] = (6, 10)
 plot_importance(xgbr,grid=False)
-plt.savefig(plot_dir+'soil_temperature_importance_latest_mae.jpg',bbox_inches='tight'
+plt.savefig(plot_dir+'soiltemp-rmse-latest-stations-1_mae.jpg',bbox_inches='tight'
             )
 
 executionTime=(time.time()-startTime)

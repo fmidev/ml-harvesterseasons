@@ -23,17 +23,17 @@ plot_dir='/home/ubuntu/ml-harvesterseasons/soil_temperature/plots/'
 ### Read in 2D tabular training data
 
 cols_own=["utctime","slhf","sshf",
-        "ssrd","strd","str","ssr","skt-00",
+        "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
         "lailv-00",
         "sd-00","rsn-00",
         "stl1-00","stl2-00","swvl2-00",
         "t2-00","td2-00","u10-00",
-        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
+        "v10-00","ro","evapp","DTM_height","DTM_slope",
         "DTM_aspect","clim_ts_value"
 ]
 
-fname='train_data_latest.csv' # training data csv filename
+fname='train_data_latest_additional.csv' # training data csv filename
 print(fname)
 
 
@@ -64,14 +64,15 @@ for y in test_y:
 # split data to predidctors (preds) and variable to be predicted (var)
 
 preds=["slhf","sshf",
-        "ssrd","strd","str","ssr","skt-00",
+        "ssrd","strd","str","ssr","skt","skt-00",
         "sktn","laihv-00",
         "lailv-00",
         "sd-00","rsn-00",
         "stl1-00","stl2-00","swvl2-00",
         "t2-00","td2-00","u10-00",
-        "v10-00","ro","evapp","longitude","latitude","DTM_height","DTM_slope",
-        "DTM_aspect",'dayOfYear']
+        "v10-00","ro","evapp","DTM_height","DTM_slope",
+        "DTM_aspect",'dayOfYear'
+        ]
 
 var=['clim_ts_value']
 preds_train=train_stations[preds] 
@@ -82,15 +83,15 @@ preds_train=preds_train.astype(float)
 
 ### LGMB
 # Define model hyperparameters 
-nstm=994
-num_leaves=33
-lrte=0.14627396695019734
-feature_fraction=0.10818814081224026
-reg_alpha=0.3433746886114696
-max_depth=10
-subsample=0.8908094383295316
-colsample_bytree=0.7
-nthread=1
+nstm=662
+num_leaves=44
+lrte=0.4227020551271515
+feature_fraction=0.7316979668699045
+reg_alpha=0.6487051405403162
+max_depth=4
+subsample=0.551480268886276
+# colsample_bytree=0.7
+nthread=9
 n_boost_round= 1000
 verbose=100
 
@@ -143,7 +144,7 @@ mse=mean_squared_error(var_test,var_pred)
 #varOut.to_csv(res_dir+'predicted_results_194sta.csv')
 
 # save model 
-model.save_model(mod_dir+'/lgb_soiltemp_latest_mae_{date_time}.json',num_iteration=model.best_iteration)
+model.save_model(mod_dir+'/lgb_soiltemp_latest_rmse.json',num_iteration=model.best_iteration)
 
 print("RMSE: %.5f" % (np.sqrt(mse)))
 # print("MAE: %.5f" % (mae))
@@ -153,6 +154,5 @@ print('Execution time in minutes: %.2f'%(executionTime/60))
 
 # plotting feature importance
 plt.rcParams["figure.figsize"] = (6, 10)
-plot_importance(model,height=0.4,grid=False)
+plot_importance(model,grid=False)
 plt.savefig(plot_dir+'soil_temperature_importance_lgb.jpg',bbox_inches='tight')
-plt.xlabel("F score")

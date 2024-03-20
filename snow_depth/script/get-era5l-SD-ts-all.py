@@ -11,10 +11,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 startTime=time.time()
 
 data_dir='/home/ubuntu/data/ML/training-data/'
-#lucas=data_dir+'soilwater/lucas_allA-Hclass_rep.csv'
-#lucas=data_dir+'LUCAS_2018_Copernicus_attr+additions.csv'
-#eobspoints=data_dir+'EOBS_orography_EU_sd.csv'
-eobspoints=data_dir+'EOBS_orography_EU_sd_1259staids.csv'
+#eobspoints=data_dir+'EOBS_orography_EU_sd_20staids.csv'
+eobspoints=data_dir+'EOBS_orography_EU_sd_2200staids.csv'
 #cols_own=['POINT_ID','TH_LAT','TH_LONG']#,'NUTS0','CPRN_LC','LC1_LABEL','DTM_height','DTM_slope','DTM_aspect','TCD','WAW','CorineLC']
 cols_own=['STAID','LAT','LON']
 #lucas_df=pd.read_csv(lucas,usecols=cols_own)
@@ -75,10 +73,10 @@ era5l0012 = [
     #{'swvl3':'SWVL3-M3M3:ERA5L:5022:9:7268:1:0'}, # Soil wetness layer 3 (m3 m-3)  
     #{'swvl4':'SWVL4-M3M3:ERA5L:5022:9:25855:1:0'}, # Soil wetness layer 4 (m3 m-3)  
     #{'t2':'T2-K:ERA5L:5022:1:0:1:0'}, # 2 metre temperature (K)  
-    {'td2':'TD2-K:ERA5L:5022:1:0:1:0'}, # 2 metre dewpoint temperature (K)  
+    #{'td2':'TD2-K:ERA5L:5022:1:0:1:0'}, # 2 metre dewpoint temperature (K)  
     #{'tsn':'TSN-K:ERA5L:5022:1:0:1:0'}, # Temperature of snow layer (K) 
     #{'u10':'U10-MS:ERA5L:5022:1:0:1:0'}, # 10 metre U wind component (m s-1)  
-    #{'v10':'V10-MS:ERA5L:5022:1:0:1:0'}, # 10 metre V wind component (m s-1)  
+    {'v10':'V10-MS:ERA5L:5022:1:0:1:0'}, # 10 metre V wind component (m s-1)  
 ]
 
 #y_start='2015'
@@ -130,10 +128,10 @@ for pardict in era5l0012:
     #    dfpoint.to_csv(data_dir+'snowdepth/era5l/era5l-'+key+'-12_'+y_start+'-'+y_end+'_'+str(point)+'.csv',index=False)
 
 ### Rolling cumsums
-#hour='00'
+hour='00'
 #start='20150901T000000Z'
-#start='20060101T000000Z'
-#end='20221231T000000Z'
+start='20060101T000000Z'
+end='20221231T000000Z'
 
 ### Runoff rolling cumsums fot t-5, t-15, t-60 and t-100 days
 #rodict={'ro':'RO-M:ERA5L:5022:1:0:1:0'} # Total precipiation in meters (m), 24h sum (for timesteps previous day!)
