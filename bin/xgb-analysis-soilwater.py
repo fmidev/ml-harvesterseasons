@@ -18,7 +18,8 @@ fname='model-1000stations-era5params-*.txt' # pois: utctime
 '''
 # xgb-fit without gridsearchCV
 #fname=sys.argv[1]
-fname = 'mdl_swi2_2015-2022_10000points-13.txt'
+#fname = 'mdl_swi2_2015-2022_10000points-13.txt'
+fname='mdl_swi2_2015-2022_63287points-1.txt'
 # Predictors in the fitted mdl
 preds=['evap','evap15d',
 'laihv-00','lailv-00',
@@ -68,7 +69,7 @@ ax.set_title(fname)
 ax.set_xscale('log')
 plt.tight_layout()
 #f.savefig('Fscore.pdf')
-f.savefig(res_dir+'Fscore_swi2-10000points-4.png', dpi=200)
+f.savefig(res_dir+'Fscore_swi2-43000points-1.png', dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 '''

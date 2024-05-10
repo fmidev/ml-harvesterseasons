@@ -41,6 +41,7 @@ cols_own=['utctime','swi2','evap','evap15d',
 'sand_0-5cm','sand_15-30cm','sand_5-15cm',
 'silt_0-5cm','silt_15-30cm','silt_5-15cm',
 'soc_0-5cm','soc_15-30cm','soc_5-15cm',
+'POINT_ID'
 ]
 fname=sys.argv[1] # training data csv filename
 print(fname)
@@ -61,6 +62,7 @@ df=df[(df.DTM_slope !=-99999.000000) & (df.DTM_height !=-99999.000000) & (df.DTM
 df = df[df['swi2'] >= 0]
 s2=df.shape[0]
 print('From '+str(s1)+' dropped '+str(s1-s2)+', apprx. '+str(round(100-s2/s1*100,1))+' %')
+print('Number of stations: '+str(df['POINT_ID'].nunique()))
 
 # Split to train and test by years, KFold for best split (k=5)
 test_y=[2019,2021]
@@ -136,7 +138,7 @@ mse=mean_squared_error(var_test,var_pred)
 mae=mean_absolute_error(var_test,var_pred)
 
 # save model 
-xgbr.save_model(mod_dir+'/mdl_swi2_2015-2022_10000points-13.txt')
+xgbr.save_model(mod_dir+'/mdl_swi2_2015-2022_63287points-1.txt')
 
 print("RMSE: %.5f" % (mse**(1/2.0)))
 print("MAE: %.5f" % (mae))
