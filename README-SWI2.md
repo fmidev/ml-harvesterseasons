@@ -22,8 +22,10 @@ To download static predictors such as soil type, run `get-ECC-static.py`.
 
 To download Copernicus DEM predictors, run `get-copernicus-ts.py`. 
 
-lisää lucas tiedosto jakeluun
+To plot the LUCAS locations on map (whole set or subset), run `plot-latlons-on-map.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. Tää skripti ja moni muu pitää siivota (ja testata) 
 
+lisää lucas tiedosto jakeluun
+lisää lista meidän mallissa käytetyistä point-idstä jakeluun
 ## Training the model
 You´ll need to combine all the predictors and predictand data as one input csv for the training scripts (all chosen locations, full time series). Note that static predictors need to be repeated daily. The first row of the input table should be column names (headers), including: 
 
@@ -34,19 +36,11 @@ To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-
 To train the model with tuned hyperparameters, run `xgb-fit-swi2.py fname` where `fname` is the name of your input csv dataset file. The fitted model is saved as txt file and RMSE/MAE is printed to terminal. 
 Laita käytetty malli jakeluun? Kun joka treenauksella ei tismalleen sama malli? 
 
-Kfold 
-cross correlatin
-f score 
-plot location maps
+To perform the K-Fold cross-validation (split input dataset to optimal training and testing sets by years), run `xgb-fit-KFold-swi2.py`.  
 
-The training scripts include one for performing the Optuna hyperparameter tuning runs and another229
-for rendering with the best tuning settings: xgb-fit-optuna-swi2.py and xgb-fit-swi2.py. The same230
-data are available for the lightGBM prefixed as the lgbm fit. These scripts are very similar to each231
-other because both XGBoost and LightGBM are methods that are integrated with scikit-learn;232
-therefore, training data are used from the same file, and the main differences in the scripts are the233
-function calls and hyperparameter attributes that differ for the two tested methods. In addition to the234
-fitting scripts, there are also Python scripts for K-fold analysis and cross-correlation, and scripts to235
-plot figures for the location maps and feature importance.236
+To create the cross-correlation matrix and correlation bar chart figures, run `cross-correlation-swi2.py`.
+
+To create the F-score (feature importance) figure, run `xgb-analysis-soilwater.py`. This needs as input the trained model.
 
 ## Predicting soil water index
 Predicting SWI2 requires two steps: The first experiment was performed as part of the get season. sh237
