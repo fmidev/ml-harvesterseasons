@@ -3,12 +3,14 @@
 This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Gradient boosting-based soil wetness for forestry climate adaptation in HarvesterSeasons service -training a model to forecast soil water index from a comprehensive set of IFS model predictors in Destination Earth`  
 
 ## System requirements
-optuna
+Python version
+Running the model training takes XX hours with XX CPU cores and XX memory, for 10 000 locations. Prediction takes... 
 ## Dependencies
-
+Python libraries were installed with conda/mamba(?): list of libraries and versions
+optuna
 xgb conda environment
 screen adviced
-
+parallel 
 ## Downloading the predictor and predictand (target) data
 For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. To run the time series (ts) scripts, you will need a csv file with LUCAS point-ids, and corresponding latitudes and longitudes. All the ts scripts need `functions.py` with functions for the time series queries etc. You can fetch data for up to 5000 points per query. Output is a csv file for each location. Check the directory structures defined in the scripts. 
 
