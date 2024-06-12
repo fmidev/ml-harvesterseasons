@@ -22,7 +22,11 @@ To download static predictors such as soil type, run `get-ECC-static.py`.
 
 To download Copernicus DEM predictors, run `get-copernicus-ts.py`. 
 
+lisää lucas tiedosto jakeluun
+
 ## Training the model
+You´ll need to combine all the predictors and predictand data as one input csv for the training scripts (all chosen locations, full time series). Note that static predictors need to be repeated daily. The first row of the input table should be column names (headers), including time steps and location point-ids. 
+
 To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-swi2.py`. 
 Kfold 
 cross correlatin
