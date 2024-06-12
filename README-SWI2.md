@@ -6,14 +6,10 @@ This code reproduces the data and model training and prediction workflows used i
 
 ## Dependencies
 
-## Downloading the predictor and predictand (target) data
-For training data preparation, we have a dozen time series scripts in Python that use the request219
-module to make http-requests to our SmartMet server time series API. These scripts were used to220
-obtain daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and221
-the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. All these223
-predictors and the predicted SWI are described in Annex 2. The API time series allows thousands of224
-locations to be queried in one request in our time window. Based on the testing, it was most efficient to query 5000 locations in a single request. This method optimally uses the memory available on the SmartMet server. More locations in one request extended the responses from the server than asking 63 000 locations in 13 sequential queries.
+xgb conda environment
 
+## Downloading the predictor and predictand (target) data
+For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period (here 2015-2022 daily) as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). These scripts were used to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. 
 ## Training the model
 The training scripts include one for performing the Optuna hyperparameter tuning runs and another229
 for rendering with the best tuning settings: xgb-fit-optuna-swi2.py and xgb-fit-swi2.py. The same230
