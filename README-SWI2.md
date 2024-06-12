@@ -31,7 +31,9 @@ You´ll need to combine all the predictors and predictand data as one input csv 
 
 To perform the Optuna hyperparameter tuning (https://optuna.org/), run `xgb-fit-optuna-swi2.py fname` where `fname` is the name of your input csv dataset file. Check the results on your Optuna Dashboard view. 
 
-To train the model with tuned hyperparameters, run `xgb-fit-swi2.py fname` where `fname` is the name of your input csv dataset file. 
+To train the model with tuned hyperparameters, run `xgb-fit-swi2.py fname` where `fname` is the name of your input csv dataset file. The fitted model is saved as txt file and RMSE/MAE is printed to terminal. 
+Laita käytetty malli jakeluun? Kun joka treenauksella ei tismalleen sama malli? 
+
 Kfold 
 cross correlatin
 f score 
