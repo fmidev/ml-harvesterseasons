@@ -9,7 +9,7 @@ This code reproduces the data and model training and prediction workflows used i
 xgb conda environment
 
 ## Downloading the predictor and predictand (target) data
-For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period (here 2015-2022 daily) as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). These scripts were used to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. 
+For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). These scripts were used to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. 
 ## Training the model
 The training scripts include one for performing the Optuna hyperparameter tuning runs and another229
 for rendering with the best tuning settings: xgb-fit-optuna-swi2.py and xgb-fit-swi2.py. The same230
