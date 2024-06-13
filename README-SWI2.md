@@ -51,9 +51,4 @@ nää skriptit on desm koneella eli ei ml puolella jaossa mutta piti muutenkin t
 
 Predicting SWI2 requires first downlnoading the data and pre-processing as all input data must be re-gridded. `get-seasonal.sh` (ei ole ml-koneella jaossa) downloads (latest or user-specified start month+year) and remaps the seasonal forecast (https://cds.climate.copernicus.eu/cdsapp#!/dataset/seasonal-original-single-levels?tab=overview) and other necessary data to ERA5-Land grid for the European area. The script performs also statistical bias-adjusting and downscaling for several parameters. Preprocessing uses the GNU parallel and CDO. osa tarvittavista gribeistä meillä koneella valmiiksi (statistiset arvot) niin niistä jtn mistä saa. Similar processing with get-edte.sh. 
 
-Predicting with the trained model happens with xgb-predict-swi2.py (seasonal forecast) and xgb-predict-edte.py (EDTE). 
-
- The second step was performed using our self-developed xgb-predict-swi2-242
-era5l.py and -edte.py scripts. These Python scripts use Xarray (Hoyer, 2017) to join different input243
-grids into one data frame that includes all time steps for each input in the target grid. This data frame244
-was used by XGBoost to calculate the grid using the predicted SWI2
+Predicting with the trained model happens with xgb-predict-swi2.py (seasonal forecast) and xgb-predict-edte.py (EDTE), with input gribs from previous bash scripts. These Python scripts use Xarray to join different input grids into one data frame that includes all time steps for each input in the target grid. This data frame was used by XGBoost to calculate the grid using the predicted SWI2
