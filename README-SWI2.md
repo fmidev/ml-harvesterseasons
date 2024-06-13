@@ -2,7 +2,7 @@
 
 This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Gradient boosting-based soil wetness for forestry climate adaptation in HarvesterSeasons service -training a model to forecast soil water index from a comprehensive set of IFS model predictors in Destination Earth`
 
-Note: as of June 2024 this README is still a work in process, be patient and we will get it ready asap :) 
+Note: as of June 2024 this README is still a work in process, please be patient and we will get it ready asap :) 
 
 ## System requirements
 Python version
