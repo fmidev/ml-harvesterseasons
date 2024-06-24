@@ -5,11 +5,14 @@ This code reproduces the data and model training and prediction workflows used i
 Note: as of June 2024 this README is still a work in process, please be patient and we will get it ready asap :) 
 
 ## System requirements
-Python version
+Python version 3.10.13 in the UNIX/Linux environment was used in this project. 
+
 Running the model training takes XX hours with XX CPU cores and XX memory, for 10 000 locations. Prediction takes... 
 desm ja ml pred ja train req
 ## Dependencies
 Python libraries were installed with conda/mamba(?): list of libraries and versions
+
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. 
 optuna
 xgb conda environment
 screen adviced
