@@ -10,7 +10,7 @@ Python version 3.10.13 in the UNIX/Linux environment was used in this project.
 Running the model training takes XX hours with XX CPU cores and XX memory, for 10 000 locations. Prediction takes... 
 desm ja ml pred ja train req
 ## Dependencies
-Python libraries were installed with conda/mamba(?): list of libraries and versions
+Python libraries were installed with conda/mamba(?): python 3.10.13 pandas 2.1.4 xarray 2023.12.0 
 
 To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. 
 optuna
