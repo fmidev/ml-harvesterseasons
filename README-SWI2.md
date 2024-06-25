@@ -5,14 +5,15 @@ This code reproduces the data and model training and prediction workflows used i
 Note: as of June 2024 this README is still a work in process, please be patient and we will get it ready asap :) 
 
 ## System requirements
-Python version 3.10.13 in the UNIX/Linux environment was used in this project. 
+Python version 3.10.13 in the UNIX/Linux environment was used in this project.
 
 Running the model training takes XX hours with XX CPU cores and XX memory, for 10 000 locations. Prediction takes... 
 desm ja ml pred ja train req
 ## Dependencies
-Python libraries were installed with conda/mamba(?): python 3.10.13 pandas 2.1.4 xarray 2023.12.0 requests 2.31.0 scikit-learn 1.3.2 optuna 3.5.0 optuna-dashboard 0.14.0 xgboost 2.0.3 numpy 1.26.3 lightgbm 4.2.0     
+To create xgb environment used in this project, check out the `requirements.txt` file.
 
-To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. 
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to.
+
 optuna
 xgb conda environment
 screen adviced
@@ -21,7 +22,7 @@ parallel Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.52
 ## Downloading the predictor and predictand (target) data
 For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. To run the time series (ts) scripts, you will need a csv file with LUCAS point-ids, and corresponding latitudes and longitudes. All the ts scripts need `functions.py` with functions for the time series queries etc. You can fetch data for up to 5000 points per query. Output is a csv file for each location. Check the directory structures defined in the scripts. 
 
-To download the predictand SWI2 data, run the `get-swi-ts-all.py`. The time series query for SWI target parameters also replaces some of the missing values with linearly interpolated values using the two nearest values within a 4-day time interval with `interpolate_t`. The resulting time series per location are saved as csv files.  
+To download the predictand SWI2 data, run the `get-swi-ts-all-FIN.py`. The time series query for SWI target parameters also replaces some of the missing values with linearly interpolated values using the two nearest values within a 4-day time interval with `interpolate_t`. The resulting time series per location are saved as csv files.  
 
 To download the ERA5-Land predictor data, run the `get-era5l-ts-all.py`. It fetches the 24h accumulated, 00 and 12 UTC hourly, and 5-/15-/60-/100-day rolling cumulative daily sums time series data and saves them per location and predictor as csv files.
 
