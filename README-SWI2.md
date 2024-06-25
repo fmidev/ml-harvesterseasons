@@ -14,12 +14,13 @@ To create xgb environment used in this project, check out the `requirements.txt`
 
 To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to.
 
-Instructions for Optuna and Optuna Dashboard at https://optuna.org. 
+Instructions for Optuna and Optuna Dashboard at https://optuna.org.
 
-For each step it is adviced to use the Linux screen, downloading the data and running the model training/prediction takes time. 
+For each step it is adviced to use the Linux screen, downloading the data and running the model training/prediction takes time.
 
-The Climate Data Operator (CDO) software is used in predicting the SWI2 for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1. 
-parallel Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
+The Climate Data Operator (CDO) software is used in predicting the SWI2 for handling the input/output grib files https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-30001.1.
+
+We use the GNU parallel: Tange, O., 2018. GNU Parallel 2018. Available at: https://doi.org/10.5281/zenodo.1146014
 ## Downloading the predictor and predictand (target) data
 For training the model you will need a table of all predictors and predictand in all chosen locations for the whole time period as input. We have several time series scripts in Python that use the request module to make http-requests to our SmartMet server (https://desm.harvesterseasons.com/grid-gui) Time Series API (https://github.com/fmidev/smartmet-plugin-timeseries). Use these scripts to get daily time series for all LUCAS locations from ERA5-Land, SWI, climatology for SWI, and the Leaf Area Index climatology for each day from 2015 to 2022. In addition, static variables, such as different land covers or inland water fractions, must be prepared as time series data. To run the time series (ts) scripts, you will need a csv file with LUCAS point-ids, and corresponding latitudes and longitudes. All the ts scripts need `functions.py` with functions for the time series queries etc. You can fetch data for up to 5000 points per query. Output is a csv file for each location. Check the directory structures defined in the scripts. 
 
