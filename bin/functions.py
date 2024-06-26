@@ -1,6 +1,7 @@
 import os, glob,requests,json,sys
 import pandas as pd
 import xarray as xr
+
 #import xgboost as xgb
 
 #eobs_path='/home/smartmet/data/eobs/blend' # copernicus-koneella
@@ -238,7 +239,7 @@ def smartmet_ts_query_multiplePoints(source,start,end,tstep,latlons,pardict,stai
     return df
 
 def rolling_cumsum(df,days,par):
-    df[par] = df.groupby(['pointID', 'latitude','longitude'])[['utctime',par]].apply(lambda group: group.rolling(days, on='utctime').sum())
+    df[par] = df.groupby(['pointID', 'latitude','longitude'], group_keys=False)[['utctime',par]].apply(lambda group: group.rolling(days, on='utctime').sum())
     df['utctime']=pd.to_datetime(df['utctime'])
     df = df.loc[(df['utctime'] >= '2015-01-01')]
     df.rename({par:par+days}, axis=1, inplace=True)

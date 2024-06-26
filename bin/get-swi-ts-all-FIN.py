@@ -51,11 +51,11 @@ for pardict in swi:
     end=y_end+'1231T120000Z'
     df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     df=df.astype({'pointID': 'int32'})
-    print(df)
+    #print(df)
     # save data to csv files for each point-id
     for point in llpdict.keys():
         dfpoint = df[df['pointID'] == point]
-        #dfpoint.to_csv(data_dir+'soilwater/swi/'+key+'/'+key+'_'+y_start+'-'+y_end+'_'+str(point)+'.csv',index=False)
+        dfpoint.to_csv(data_dir+'soilwater/swi/'+key+'/'+key+'_'+y_start+'-'+y_end+'_'+str(point)+'.csv',index=False)
 
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))

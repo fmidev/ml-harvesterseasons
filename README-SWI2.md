@@ -7,8 +7,8 @@ Note: as of June 2024 this README is still a work in process, please be patient 
 ## System requirements
 Python version 3.10.13 in the UNIX/Linux environment was used in this project.
 
-Running the model training takes XX hours with XX CPU cores and XX memory, for 10 000 locations. Prediction takes... 
-desm ja ml pred ja train req
+The time it takes to run the model training dependes f.ex. on the number of locations, number of predictors, selected hyperparameters, etc. For 10 000 locations, 47 predictors and hyperparameters described in the article, it took approximately 5.5 hours to train the model used in this study, with 64 CPU cores and 228G memory. With the fitted model, predicting SWI2 from seasonal forecast data takes around 5 hours with a similar setup.   
+
 ## Dependencies
 To create xgb environment used in this project, check out the `requirements.txt` file.
 
@@ -26,15 +26,13 @@ For training the model you will need a table of all predictors and predictand in
 
 To download the predictand SWI2 data, run the `get-swi-ts-all-FIN.py`. The time series query for SWI target parameters also replaces some of the missing values with linearly interpolated values using the two nearest values within a 4-day time interval with `interpolate_t`. The resulting time series per location are saved as csv files.  
 
-To download the ERA5-Land predictor data, run the `get-era5l-ts-all.py`. It fetches the 24h accumulated, 00 and 12 UTC hourly, and 5-/15-/60-/100-day rolling cumulative daily sums time series data and saves them per location and predictor as csv files.
+To download the ERA5-Land predictor data, run the `get-era5l-ts-all-FIN.py`. It fetches the 24h accumulated, 00 and 12 UTC hourly, and 5-/15-/60-/100-day rolling cumulative daily sums time series data and saves them per location and predictor as csv files.
 
-To download SWI2 climatology predictor data, run `get-swi-clim-ts.py`. 
+To download SWI2 climatology predictor data, run `get-swi-clim-ts-FIN.py`. 
 
 To download static predictors such as soil type, run `get-ECC-static.py`. 
 
-To download Copernicus DEM predictors, run `get-copernicus-ts.py`. 
-
-To plot the LUCAS locations on map (whole set or subset), run `plot-latlons-on-map.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. Tää skripti ja moni muu pitää siivota (ja testata) 
+To plot the LUCAS locations on map (whole set or subset), run `plot-latlons-on-map.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. 
 
 lisää lucas tiedosto jakeluun tai silt etc mistä sai ohje
 lisää lista meidän mallissa käytetyistä point-idstä jakeluun

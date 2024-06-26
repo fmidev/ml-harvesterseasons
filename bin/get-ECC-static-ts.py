@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-import requests, os, time, glob, json,sys
+import time, warnings
 import pandas as pd
 import functions as fcts
-import numpy as np
-import itertools
-import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 ### SmarMet-server timeseries query to fetch static ECC parameters to training data for machine learning
 # conda activate xgb
