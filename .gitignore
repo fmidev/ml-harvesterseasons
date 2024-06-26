@@ -1,6 +1,6 @@
 *.json
 *Europe*.txt
-*.csv
+*era5l*.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
