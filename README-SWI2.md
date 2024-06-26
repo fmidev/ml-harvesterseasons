@@ -32,7 +32,7 @@ To download SWI2 climatology predictor data, run `get-swi-clim-ts-FIN.py`.
 
 To download static predictors such as soil type, run `get-ECC-static.py`. 
 
-To plot the LUCAS locations on map (whole set or subset), run `plot-LUCAS-locations.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. 
+To plot the LUCAS locations on map (whole set or subset), run `plot-LUCAS-locations.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. List of all 10 000 Lucas locations used in this study can be found in '10000pointIDs-2.txt' file. 
 
 lisää lista meidän mallissa käytetyistä point-idstä jakeluun
 ## Training the model
