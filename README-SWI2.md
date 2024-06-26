@@ -32,7 +32,7 @@ To download SWI2 climatology predictor data, run `get-swi-clim-ts-FIN.py`.
 
 To download static predictors such as soil type, run `get-ECC-static.py`. 
 
-To plot the LUCAS locations on map (whole set or subset), run `plot-latlons-on-map.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. 
+To plot the LUCAS locations on map (whole set or subset), run `plot-LUCAS-locations.py`. You will need a NUTS_RG_20M_2021_4326.json file for the background map. 
 
 lisää lista meidän mallissa käytetyistä point-idstä jakeluun
 ## Training the model
