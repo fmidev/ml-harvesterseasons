@@ -1,10 +1,9 @@
-import os,optuna,time,random,warnings,sys
+import os,optuna,time,warnings,sys
 import sklearn.datasets
 import sklearn.metrics
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error
 import pandas as pd
 import xgboost as xgb
-from sklearn.model_selection import GridSearchCV
 import numpy as np
 warnings.filterwarnings("ignore")
 ### XGBoost with Optuna hyperparameter tuning for swi2 ML model
