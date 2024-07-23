@@ -1,6 +1,7 @@
 *.json
 *Europe*.txt
 *era5l*.csv
+fmi-apikey
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
