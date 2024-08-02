@@ -15,8 +15,6 @@ res_dir='/home/ubuntu/data/ML/results/OCEANIDS'
 all cols 
 '''
 ### Read in 2D tabular training data
-# tsea on nan mantereella
-# obs pitää laittaa joka pisteelle pvm mukaan sama
 cols_own=['utctime','WS_PT1H_AVG','latitude','longitude',
 'u10','v10','fg10','td2','t2','ewss','e','lsm','msl','nsss',
 'tsea','slhf','ssr','str','sshf','ssrd','strd','tcc','tlwc',
