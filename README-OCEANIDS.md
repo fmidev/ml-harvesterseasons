@@ -10,7 +10,7 @@ lat-2 |lon-2 |60.25 |25.25|
 lat-3 |lon-3 |60.25 |25.00|
 lat-4 |lon-4 |60.00| 25.25|
 
-![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028.jpg)
+![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028-2.jpg)
 Figure 1 Training locations (blue) and Helsinki Vuosaari harbor measuring site (red).
 ## Predictand data
 
