@@ -1,8 +1,6 @@
-import os, time, random, warnings,sys
+import time,warnings
 import pandas as pd
-import numpy as np
 import xgboost as xgb
-from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 warnings.filterwarnings("ignore")
 ### XGBoost for OCEANIDS
@@ -24,7 +22,7 @@ cols_own=['utctime','WS_PT1H_AVG','latitude','longitude',
 'tsea','slhf','ssr','str','sshf','ssrd','strd','tcc','tlwc',
 'tp','dayOfYear','hour'
 ]
-fname=sys.argv[1] # training data csv filename
+fname= # training input data
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 

@@ -2,9 +2,11 @@
 
 Helsinki Vuosaari harbor FMISID 151028 lat 60.20867 long 25.2959
 
-training latitudes [60.2500000 60.2500000 60.0000000 60.0000000]
-
-training longitudes [25.0000000 25.2500000 25.0000000 25.2500000]
+training latitudes
+lat-1 lon-1 60.0000000 25.0000000
+lat-2 lon-2 60.2500000 25.2500000
+lat-3 lon-3 60.2500000 25.0000000
+lat-4 lon-4 60.0000000 25.2500000
 
 ![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028.jpg)
 
@@ -14,7 +16,6 @@ training longitudes [25.0000000 25.2500000 25.0000000 25.2500000]
 | ------------- |---|:-------------:|-:|
 | Average wind speed, 1 hour| m/s |  |WS_PT1H_AVG |
 |Maximum wind speed, 1 hour |m/s||WG_PT1H_MAX|
-
 
 ## Predictors for fitting the ML model
 

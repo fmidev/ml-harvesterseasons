@@ -8,13 +8,22 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 startTime=time.time()
 
+def filter_points(df,lat,lon,nro,name):
+    df0=df.copy()
+    filter1 = df0['latitude'] == lat
+    filter2 = df0['longitude'] == lon
+    df0.where(filter1 & filter2, inplace=True)
+    df0.columns=['lat-'+str(nro),'lon-'+str(nro),name+'-'+str(nro)] # change headers      
+    df0=df0.dropna()
+    return df0
+
 data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'
 
 predictors = [
-        ##{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
-        ##{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
-        ##{'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
-        {'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
+        {'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
+        #{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
+        #{'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
+        #{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
         #{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
         #{'ewss':'EWSS-NM2S:ERA5:5021:1:0:1:0'}, # eastward turbulent surface stress
         #{'e':'EVAP-M:ERA5:5021:1:0:1:0'}, # evaporation
@@ -59,9 +68,32 @@ for pred in predictors:
     expl_cols=['latitude','longitude',name]
     df=df.explode(expl_cols)
     print(df)
+    df.set_index('utctime',inplace=True)
+    # filter points
+    lat='60.0000000000000000'
+    lon='25.0000000000000000'
+    df1=filter_points(df,lat,lon,1,name)
+    lat='60.2500000000000000'
+    lon='25.2500000000000000'
+    df2=filter_points(df,lat,lon,2,name)
+    lat='60.2500000000000000'
+    lon='25.0000000000000000'
+    df3=filter_points(df,lat,lon,3,name)
+    lat='60.0000000000000000'
+    lon='25.2500000000000000'
+    df4=filter_points(df,lat,lon,4,name)
+    # merge dataframes
+    df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()
+    print(df_new)
+    # save to csv file
+    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-all-check.csv',index=False) 
+    df_new = df_new.drop(['utctime', 'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4'], axis=1)
+    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-all-use.csv',index=False) 
     
-    # save dataframe as csv
-    df.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-all.csv',index=False) 
-
+    # save utctime, lat/lon info to csv file (run once with u10, then comment out)
+    #df_new = df_new.drop(['u10-1', 'u10-2','u10-3','u10-4'], axis=1)
+    #print(df_new)
+    #df_new.to_csv(data_dir+'era5-oceanids-utctime-lat-lon-'+start+'-'+end+'-all.csv',index=False) 
+    
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))
