@@ -10,6 +10,7 @@ Closest to harbor ERA5 grid points in Table 1.
 lat-2 |lon-2 |60.25 |25.25|
 lat-3 |lon-3 |60.25 |25.00|
 lat-4 |lon-4 |60.00| 25.25|
+
 Table 1 Training locations and their ML names. 
 
 ![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028-2.jpg)
