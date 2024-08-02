@@ -1,12 +1,14 @@
 ## Training locations 
 
-Helsinki Vuosaari harbor FMISID 151028 lat 60.20867 long 25.2959
+Helsinki Vuosaari harbor: FMISID 151028 latitude 60.20867 longitude 25.2959
 
-training latitudes
-lat-1 lon-1 60.0000000 25.0000000
-lat-2 lon-2 60.2500000 25.2500000
-lat-3 lon-3 60.2500000 25.0000000
-lat-4 lon-4 60.0000000 25.2500000
+### Training latitudes
+|lat name|lon name|lat deg|lon deg|
+|:-:|:-:|:--:|:--:|
+|lat-1 |lon-1 |60.00 |25.00|
+lat-2 |lon-2 |60.25 |25.25|
+lat-3 |lon-3 |60.25 |25.00|
+lat-4 |lon-4 |60.00| 25.25|
 
 ![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028.jpg)
 
