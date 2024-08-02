@@ -21,25 +21,25 @@ data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'
 
 predictors = [
         ##{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
-        {'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
-        #{'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
-        #{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
-        #{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
-        #{'ewss':'EWSS-NM2S:ERA5:5021:1:0:1:0'}, # eastward turbulent surface stress
-        #{'e':'EVAP-M:ERA5:5021:1:0:1:0'}, # evaporation
+        ##{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
+        ##{'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
+        ##{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
+        ##{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
+        ##{'ewss':'EWSS-NM2S:ERA5:5021:1:0:1:0'}, # eastward turbulent surface stress
+        ##{'e':'EVAP-M:ERA5:5021:1:0:1:0'}, # evaporation
         #{'lsm':'LC-0TO1:ERA5:5021:1:0:1:0'}, # land-sea mask
-        #{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure
-        #{'nsss':'NSSS-NM2S:ERA5:5021:1:0:1:0'}, # northward turbulent surface stress
-        #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature
-        #{'slhf':'FLLAT-JM2:ERA5:5021:1:0:1:0'}, # surface latent heat flux
-        #{'ssr':'RNETSWA-JM2:ERA5:5021:1:0:1:0'}, # surface net solar radiation
-        #{'str':'RNETLWA-JM2:ERA5:5021:1:0:1:0'}, # surface net thermal radiation
-        #{'sshf':'FLSEN-JM2:ERA5:5021:1:0:1:0'}, # surface sensible heat flux
-        #{'ssrd':'RADGLOA-JM2:ERA5:5021:1:0:1:0'}, # surface solar radiation downwards
-        #{'strd':'RADLWA-JM2:ERA5:5021:1:0:1:0'}, # surface thermal radiation downwards
-        #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover
-        #{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water
-        #{'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
+        ##{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure
+        ##{'nsss':'NSSS-NM2S:ERA5:5021:1:0:1:0'}, # northward turbulent surface stress
+        ##{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature
+        ##{'slhf':'FLLAT-JM2:ERA5:5021:1:0:1:0'}, # surface latent heat flux
+        ##{'ssr':'RNETSWA-JM2:ERA5:5021:1:0:1:0'}, # surface net solar radiation
+        ##{'str':'RNETLWA-JM2:ERA5:5021:1:0:1:0'}, # surface net thermal radiation
+        ##{'sshf':'FLSEN-JM2:ERA5:5021:1:0:1:0'}, # surface sensible heat flux
+        ##{'ssrd':'RADGLOA-JM2:ERA5:5021:1:0:1:0'}, # surface solar radiation downwards
+        ##{'strd':'RADLWA-JM2:ERA5:5021:1:0:1:0'}, # surface thermal radiation downwards
+        ##{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover
+        ##{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water
+        {'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
 ]
 
 source='desm.harvesterseasons.com:8080' # server for timeseries query

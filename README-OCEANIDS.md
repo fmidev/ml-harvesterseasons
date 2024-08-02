@@ -3,6 +3,7 @@
 Helsinki Vuosaari harbor: FMISID 151028 latitude 60.20867 longitude 25.2959
 
 ### Training latitudes
+Closest ERA5 grid points.
 |lat name|lon name|lat deg|lon deg|
 |:-:|:-:|:--:|:--:|
 |lat-1 |lon-1 |60.00 |25.00|
