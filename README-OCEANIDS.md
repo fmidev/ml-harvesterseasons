@@ -13,7 +13,7 @@ lat-4 |lon-4 |60.00| 25.25|
 
 Table 1 Training locations and their ML names. 
 
-![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028-2.jpg)
+![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028-3.jpg)
 Figure 1 Training locations (blue) and Helsinki Vuosaari harbor measuring site (red).
 ## Predictand data
 
@@ -53,21 +53,39 @@ Figure 1 Training locations (blue) and Helsinki Vuosaari harbor measuring site (
 | ------------- |---|:-------------:| --:|-:|-:|
 | 10m u-component of wind | m/s |||6h instantaneous|u10|
 | 10m v-component of wind | m/s |||6h instantaneous|v10|
-| 10m wind gust since previous post-processing  | m/s ||24h aggregation|fg10|
+| 10m wind gust since previous post-processing  | m/s |||24h aggregation|fg10|
 |2m dewpoint temperature|K|||6h instantaneous|td2|
 |2m temperature|K|||6h instantaneous|t2|
-|Eastward turbulent surface stress|N m-2 s||24h aggregation since beginning of forecast|ewss|
-|Evaporation|m of water equivalent||24h aggregation since beginning of forecast|e|
+|Eastward turbulent surface stress|N m-2 s|||24h aggregation since beginning of forecast|ewss|
+|Evaporation|m of water equivalent|||24h aggregation since beginning of forecast|e|
 |Land-sea mask|-|||	Static|lsm|
-|Mean sea level pressure|Pa||6h instantaneous|msl|
-|Northward turbulent surface stress|N m-2 s||24h aggregation since beginning of forecast|nsss|
-|Sea surface temperature|K||6h instantaneous|tsea|
-|Surface latent heat flux|W m-2||24h aggregation since beginning of forecast|slhf|
-|Surface net solar radiation|W m-2||24h aggregation since beginning of forecast|ssr|
-|Surface net thermal radiation|W m-2||24h aggregation since beginning of forecast|str|
-|Surface sensible heat flux|W m-2||24h aggregation since beginning of forecast|sshf|
-|Surface solar radiation downwards|W m-2||24h aggregation since beginning of forecast|ssrd|
-|Surface thermal radiation downwards|W m-2||24h aggregation since beginning of forecast|strd|
-|Total cloud cover|0 to 1||6h instantaneous|tcc|
-|Total column cloud liquid water|kg m-2||24h instantaneous|tlwc|
-|Total precipitation|m||24h aggregation since beginning of forecast|tp|
+|Mean sea level pressure|Pa|||6h instantaneous|msl|
+|Northward turbulent surface stress|N m-2 s|||24h aggregation since beginning of forecast|nsss|
+|Sea surface temperature|K|||6h instantaneous|tsea|
+|Surface latent heat flux|W m-2|||24h aggregation since beginning of forecast|slhf|
+|Surface net solar radiation|W m-2|||24h aggregation since beginning of forecast|ssr|
+|Surface net thermal radiation|W m-2|||24h aggregation since beginning of forecast|str|
+|Surface sensible heat flux|W m-2|||24h aggregation since beginning of forecast|sshf|
+|Surface solar radiation downwards|W m-2|||24h aggregation since beginning of forecast|ssrd|
+|Surface thermal radiation downwards|W m-2|||24h aggregation since beginning of forecast|strd|
+|Total cloud cover|0 to 1|||6h instantaneous|tcc|
+|Total column cloud liquid water|kg m-2|||24h instantaneous|tlwc|
+|Total precipitation|m|||24h aggregation since beginning of forecast|tp|
+
+## KFold
+Fold: 1 RMSE: 1.02
+Train:  [2013 2015 2016 2017 2018 2019 2022 2023] Test:  [2014 2020 2021]
+
+Fold: 2 RMSE: 0.99
+Train:  [2014 2015 2016 2017 2019 2020 2021 2022 2023] Test:  [2013 2018]
+
+Fold: 3 RMSE: 1.03
+Train:  [2013 2014 2016 2017 2018 2020 2021 2022 2023] Test:  [2015 2019]
+
+Fold: 4 RMSE: 1.01
+Train:  [2013 2014 2015 2016 2018 2019 2020 2021 2022] Test:  [2017 2023]
+
+Fold: 5 RMSE: 0.98
+Train:  [2013 2014 2015 2017 2018 2019 2020 2021 2023] Test:  [2016 2022]
+
+Best fold: 5

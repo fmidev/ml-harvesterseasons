@@ -39,7 +39,7 @@ predictors = [
         ##{'strd':'RADLWA-JM2:ERA5:5021:1:0:1:0'}, # surface thermal radiation downwards
         ##{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover
         ##{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water
-        {'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
+        ##{'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
 ]
 
 source='desm.harvesterseasons.com:8080' # server for timeseries query
