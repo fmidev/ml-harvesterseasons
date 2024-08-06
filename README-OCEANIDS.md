@@ -14,7 +14,7 @@ lat-4 |lon-4 |60.00| 25.25|
 Table 1 Training locations and their ML names. 
 
 ![Training locations (blue) and Helsinki Vuosaari harbor measuring site (red)](HelsinkiVuosaariHarbor151028-3.jpg)
-Figure 1 Training locations (blue) and Helsinki Vuosaari harbor measuring site (red).
+Figure 1 Training locations and Helsinki Vuosaari harbor measuring site.
 ## Predictand data
 
 | Predictand | Units | Producer |  ML name |
