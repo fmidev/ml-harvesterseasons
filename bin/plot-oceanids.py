@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import requests,json
-from Raahe_101785 import *
+#from Raahe_101785 import *
 #from Vuosaari_151028 import *
-#from Rauma_101061 import *
+from Rauma_101061 import *
 #from Malaga_000231_simple import *
 
 request = cimgt.OSM()
