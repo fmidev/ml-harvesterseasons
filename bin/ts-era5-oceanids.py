@@ -20,11 +20,11 @@ def filter_points(df,lat,lon,nro,name):
 data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'
 
 predictors = [
-        ##{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
-        ##{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
-        ##{'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
+        {'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind
+        {'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind
+        {'fg10':'FFG-MS:ERA5:5021:1:0:1:0'}, # 10m wind gust since previous post-processing AINA EDELLINEN TUNTI HAE ERIKSEEN
         ##{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature
-        ##{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
+        {'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature
         ##{'ewss':'EWSS-NM2S:ERA5:5021:1:0:1:0'}, # eastward turbulent surface stress
         ##{'e':'EVAP-M:ERA5:5021:1:0:1:0'}, # evaporation
         #{'lsm':'LC-0TO1:ERA5:5021:1:0:1:0'}, # land-sea mask
@@ -39,13 +39,16 @@ predictors = [
         ##{'strd':'RADLWA-JM2:ERA5:5021:1:0:1:0'}, # surface thermal radiation downwards
         ##{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover
         ##{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water
-        ##{'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
+        {'tp':'RR-M:ERA5:5021:1:0:1:0'} # total precipitation
 ]
 
 source='desm.harvesterseasons.com:8080' # server for timeseries query
-bbox='24.9459,60.45867,25.4459,59.95867' # Vuosaari harbor region, 4 grid points
-start='20130701T000000Z' # 2013-2023 period for ML fitting as observations (predictand) available 2013 onward
-end='20231231T210000Z'
+#bbox='24.9459,60.45867,25.4459,59.95867' # Vuosaari harbor region, 4 grid points
+bbox='4.23222,36.41611,4.73222,36.91611' # Malaga port/airport region, 4 grid points
+#start='20130701T000000Z' # 2013-2023 period for ML fitting as observations (predictand) available 2013 onward
+#end='20231231T210000Z'
+start='20000101T000000Z'
+end='20230831T000000Z'
 tstep='3h'
 
 # Timeseries query
@@ -70,17 +73,17 @@ for pred in predictors:
     print(df)
     df.set_index('utctime',inplace=True)
     # filter points
-    lat='60.0000000000000000'
-    lon='25.0000000000000000'
+    lat='36.5000000000000000'
+    lon='4.25000000000000000'
     df1=filter_points(df,lat,lon,1,name)
-    lat='60.2500000000000000'
-    lon='25.2500000000000000'
+    lat='36.7500000000000000'
+    lon='4.2500000000000000'
     df2=filter_points(df,lat,lon,2,name)
-    lat='60.2500000000000000'
-    lon='25.0000000000000000'
+    lat='36.7500000000000000'
+    lon='4.500000000000000'
     df3=filter_points(df,lat,lon,3,name)
-    lat='60.0000000000000000'
-    lon='25.2500000000000000'
+    lat='36.500000000000000'
+    lon='4.500000000000000'
     df4=filter_points(df,lat,lon,4,name)
     # merge dataframes
     df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()

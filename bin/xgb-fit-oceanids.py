@@ -2,6 +2,18 @@ import time,warnings
 import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+#from Vuosaari_151028_simple import *
+#from Vuosaari_151028 import *
+#from Vuosaari_151028_FGo import *
+#from Raahe_101785_simple import *
+#from Raahe_101785 import *
+#from Raahe_101785_FGo import *
+#from Rauma_101061_simple import *
+#from Rauma_101061 import *
+#from Rauma_101061_FGo import *
+from Malaga_000231_simple import *
+
+
 warnings.filterwarnings("ignore")
 ### XGBoost for OCEANIDS
 
@@ -11,33 +23,7 @@ data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/' # training data
 mod_dir='/home/ubuntu/data/ML/models/OCEANIDS' # saved mdl
 res_dir='/home/ubuntu/data/ML/results/OCEANIDS'
 
-'''
-all cols 
-utctime,latitude,longitude,FMISID,WS_PT1H_AVG,WG_PT1H_MAX,dayOfYear,hour,
-utctime,lat-1,lon-1,lat-2,lon-2,lat-3,lon-3,lat-4,lon-4,e-1,e-2,e-3,e-4,
-ewss-1,ewss-2,ewss-3,ewss-4,fg10-1,fg10-2,fg10-3,fg10-4,lsm-1,lsm-2,lsm-3,lsm-4,
-msl-1,msl-2,msl-3,msl-4,nsss-1,nsss-2,nsss-3,nsss-4,slhf-1,slhf-2,slhf-3,slhf-4,
-sshf-1,sshf-2,sshf-3,sshf-4,ssr-1,ssr-2,ssr-3,ssr-4,ssrd-1,ssrd-2,ssrd-3,ssrd-4,
-str-1,str-2,str-3,str-4,strd-1,strd-2,strd-3,strd-4,t2-1,t2-2,t2-3,t2-4,
-tcc-1,tcc-2,tcc-3,tcc-4,td2-1,td2-2,td2-3,td2-4,tlwc-1,tlwc-2,tlwc-3,tlwc-4,
-tp-1,tp-2,tp-3,tp-4,tsea-1,tsea-2,tsea-3,tsea-4,u10-1,u10-2,u10-3,u10-4,
-v10-1,v10-2,v10-3,v10-4
-'''
 ### Read in 2D tabular training data
-cols_own=['utctime','WS_PT1H_AVG','dayOfYear',#'hour',
-#'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4',
-'e-1','e-2','e-3','e-4','ewss-1','ewss-2','ewss-3','ewss-4',
-'fg10-1','fg10-2','fg10-3','fg10-4','lsm-1','lsm-2','lsm-3','lsm-4',
-'msl-1','msl-2','msl-3','msl-4','nsss-1','nsss-2','nsss-3','nsss-4',
-'slhf-1','slhf-2','slhf-3','slhf-4','sshf-1','sshf-2','sshf-3','sshf-4',
-'ssr-1','ssr-2','ssr-3','ssr-4','ssrd-1','ssrd-2','ssrd-3','ssrd-4',
-'str-1','str-2','str-3','str-4','strd-1','strd-2','strd-3','strd-4',
-'t2-1','t2-2','t2-3','t2-4','tcc-1','tcc-2','tcc-3','tcc-4',
-'td2-1','td2-2','td2-3','td2-4','tlwc-1','tlwc-2','tlwc-3','tlwc-4',
-'tp-1','tp-2','tp-3','tp-4','tsea-1','tsea-2','tsea-3','tsea-4',
-'u10-1','u10-2','u10-3','u10-4','v10-1','v10-2','v10-3','v10-4'
-]
-fname = 'training_data_oceanids_Vuosaari-sf_2013-2023.csv' # training input data file
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
@@ -52,8 +38,6 @@ headers=list(df) # list column headers
 #print(df)
 
 # Split to train and test by years, KFold for best split (k=5)
-test_y=[2016,2022]
-train_y=[2013,2014,2015,2017,2018,2019,2020,2021,2023]
 print('test ',test_y,' train ',train_y)
 train_stations,test_stations=pd.DataFrame(),pd.DataFrame()
 for y in train_y:
@@ -62,8 +46,8 @@ for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
 # Split to predictors (preds) and predictand (var) data
-var_headers=list(df[['WS_PT1H_AVG']])
-preds_headers=list(df[headers].drop(['utctime','WS_PT1H_AVG'], axis=1))
+var_headers=list(df[[pred]])
+preds_headers=list(df[headers].drop(['utctime',pred], axis=1))
 preds_train=train_stations[preds_headers] 
 preds_test=test_stations[preds_headers]
 var_train=train_stations[var_headers]
@@ -71,14 +55,14 @@ var_test=test_stations[var_headers]
 
 ### XGBoost
 # Define model hyperparameters (Optuna tuned)
-nstm=645
-lrte=0.067
-max_depth=10
-subsample=0.29
-colsample_bytree=0.56
+nstm=201
+lrte=0.024072995201099512
+max_depth=13
+subsample=0.022758076168221588
+colsample_bytree=0.2640681196500122
 #colsample_bynode=1
-num_parallel_tree=10
-a=0.54
+num_parallel_tree=4
+a=0.2813150838555063
 
 # initialize and tune model
 xgbr=xgb.XGBRegressor(
@@ -110,7 +94,7 @@ mse=mean_squared_error(var_test,var_pred)
 mae=mean_absolute_error(var_test,var_pred)
 
 # save model 
-xgbr.save_model(mod_dir+'/mdl_WSPT1HAVG_2013-2023_sf_test.txt')
+xgbr.save_model(mod_dir+'/'+mdl_name)
 
 print("RMSE: %.5f" % (mse**(1/2.0)))
 print("MAE: %.5f" % (mae))

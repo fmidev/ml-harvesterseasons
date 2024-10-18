@@ -3,30 +3,52 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+#from Raahe_101785 import *
+#from Raahe_101785_simple import *
+#from Raahe_101785_FGo import *
+#from Vuosaari_151028 import *
+#from Vuosaari_151028_simple import *
+#from Vuosaari_151028_FGo import *
+#from Rauma_101061 import *
+#from Rauma_101061_simple import *
+#from Rauma_101061_FGo import *
+from Malaga_000231_simple import *
+
 
 startTime=time.time()
+
+def filter_points(df,lat,lon,nro,name):
+    df0=df.copy()
+    filter1 = df0['latitude'] == lat
+    filter2 = df0['longitude'] == lon
+    df0.where(filter1 & filter2, inplace=True)
+    df0.columns=['lat-'+str(nro),'lon-'+str(nro),name+'-'+str(nro)] # change headers      
+    df0=df0.dropna()
+    return df0
 
 data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/' # training data
 mdls_dir='/home/ubuntu/data/ML/models/OCEANIDS/' # saved mdl
 res_dir='/home/ubuntu/data/ML/results/OCEANIDS/'
 
-mod_fname='mdl_WSPT1HAVG_2013-2023_test.txt'
-
 # read in predictors in the fitted model from training data file
-fname = 'training_data_oceanids_Vuosaari_2013-2023.csv' # training input data file
-df=pd.read_csv(data_dir+fname)
+print(fname)
+df=pd.read_csv(data_dir+fname,usecols=cols_own)
 df=df.dropna(axis=1, how='all')
 s1=df.shape[0]
 df=df.dropna(axis=0,how='any')
 s2=df.shape[0]
 print('From '+str(s1)+' rows dropped '+str(s1-s2)+', apprx. '+str(round(100-s2/s1*100,1))+' %')
+
 df['utctime']= pd.to_datetime(df['utctime'])
-headers=list(df) # list column headers
-preds=list(df[headers].drop(['utctime','utctime.1','WS_PT1H_AVG','latitude', 'longitude', 'FMISID', 'WG_PT1H_MAX','lat-1', 'lon-1', 'lat-2', 'lon-2', 'lat-3', 'lon-3', 'lat-4', 'lon-4'], axis=1))
+#headers=list(df) # list column headers
+#preds=list(df[headers].drop(droplist, axis=1))
+#print(preds)
+preds=list(df.drop(['utctime',pred], axis=1))
 print(preds)
+
 ## F-score
 print("start fscore")
-mdl=mdls_dir+mod_fname
+mdl=mdls_dir+mdl_name
 models=[]
 fitted_mdl=xgb.XGBRegressor()
 fitted_mdl.load_model(mdl)
@@ -53,10 +75,10 @@ print(mean_scores)
 f, ax = plt.subplots(1,1,figsize=(6, 10))
 mean_scores.plot.barh(ax=ax, legend=False)
 ax.set_xlabel('F score')
-ax.set_title(mod_fname)
+ax.set_title(mdl_name)
 ax.set_xscale('log')
 plt.tight_layout()
-f.savefig(res_dir+'Fscore_WS_PT1H_AVG-test.png', dpi=200)
+f.savefig(res_dir+fscorepic, dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 

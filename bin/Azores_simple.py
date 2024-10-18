@@ -1,0 +1,19 @@
+bbox='4.23222,36.41611,4.73222,36.91611'
+harbor='Azores'
+FMISID='2956'
+lat=36.66611
+lon=4.48222
+pred='WG_PT1H_MAX'
+qpred='max_t('+pred+'/24h/0h)'
+start='20000109T000000Z'
+end='20230831T000000Z' 
+starty=start[0:4]
+endy=end[0:4]
+
+fname = 'training_data_oceanids_Malaga-sf_2010-2023.csv' # training input data file
+mdl_name='mdl_'+pred+'_2010-2023_sf_Malaga_simple.txt'
+fscorepic='Fscore_'+pred+'-sf-Malaga-simple.png'
+xgbstudy='xgb-'+pred+'-Malaga'
+obsfile='obs-oceanids-'+start+'-'+end+'-'+pred+'-'+harbor+'-daymax.csv'
+test_y=[2016,2023]
+train_y=[2010,2011,2012,2013,2014,2015,2017,2018,2019,2020,2021,2022]
