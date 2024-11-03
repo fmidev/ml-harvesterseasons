@@ -19,7 +19,7 @@ test_y=[2015,2019]
 train_y=[2013,2014,2016,2017,2018,2020,2021,2022,2023]
 
 droplist=['utctime','utctime.1','WS_PT1H_AVG','latitude', 'longitude', 'FMISID', pred,'lat-1', 'lon-1', 'lat-2', 'lon-2', 'lat-3', 'lon-3', 'lat-4', 'lon-4','hour','dayOfYear','e-1','e-2','e-3','e-4','msl-1','msl-2','msl-3','msl-4','str-1','str-2','str-3','str-4','tcc-1','tcc-2','tcc-3','tcc-4','tlwc-1','tlwc-2','tlwc-3','tlwc-4','lsm-1','lsm-2','lsm-3','lsm-4']
-xgbstudy='xgb-'+pred+'-Vuosaari'
+xgbstudy='xgb-'+pred+'-Vuosaari-testi'
 cols_own=['utctime',pred,#'dayOfYear',#'hour',
 #'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4',
 #'e-1','e-2','e-3','e-4',

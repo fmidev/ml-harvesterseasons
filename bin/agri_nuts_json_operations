@@ -1,0 +1,37 @@
+import json
+import pandas as pd
+
+# Load the GeoJSON data
+with open('/home/ubuntu/data/agri-ml/nuts/NUTS_RG_20M_2024_4326_LEVL_2.geojson', 'r') as f:
+    geojson_data = json.load(f)
+
+# Function to format the coordinates
+def format_polygon(coordinates):
+    # Assuming the coordinates are a list of lists (for polygons)
+    formatted = ','.join([f"{lon}+{lat}" for lon, lat in coordinates[0]])
+    return f"({formatted})"
+
+# Extract polygons and format them
+polygons = []
+nuts_ids = []
+
+for feature in geojson_data['features']:
+    nuts_id = feature['properties']['NUTS_ID']  # Extract NUTS_ID
+    geometry = feature['geometry']  # Extract geometry
+    
+    if geometry['type'] == 'Polygon':
+        formatted_polygon = 'POLYGON(%s)'%(format_polygon(geometry['coordinates']))
+        polygons.append(formatted_polygon)
+        nuts_ids.append(nuts_id)
+
+# Create a DataFrame
+df = pd.DataFrame({
+    'NUTS_ID': nuts_ids,
+    'Polygon': polygons
+})
+
+# Output the DataFrame
+print(df)
+
+# Save the DataFrame to a CSV file
+df.to_csv('/home/ubuntu/data/agri-ml/nuts/nuts_polygons_LEVL_2.csv', sep=";", index=False)

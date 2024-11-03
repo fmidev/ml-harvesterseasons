@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 #from Rauma_101061 import *
 #from Rauma_101061_simple import *
 #from Rauma_101061_FGo import *
-from Malaga_000231_simple import *
+from Malaga_000231 import *
 
 
 startTime=time.time()

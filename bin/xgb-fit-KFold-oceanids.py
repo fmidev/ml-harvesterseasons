@@ -7,7 +7,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 #from Raahe_101785 import * # import bbox, harbor, FMISID, cols_own, fname, test_y, train_y, mdl_name
 #from Vuosaari_151028 import *
 #from Rauma_101061 import *
-from Malaga_000231_simple import *
+#from Malaga_000231 import *
+from Malaga_ece3 import *
 
 ### XGBoost with KFold for OCEANIDS
 startTime=time.time()

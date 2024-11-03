@@ -11,7 +11,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 #from Rauma_101061_simple import *
 #from Rauma_101061 import *
 #from Rauma_101061_FGo import *
-from Malaga_000231_simple import *
+from Malaga_000231 import *
 
 
 warnings.filterwarnings("ignore")
@@ -55,14 +55,14 @@ var_test=test_stations[var_headers]
 
 ### XGBoost
 # Define model hyperparameters (Optuna tuned)
-nstm=201
-lrte=0.024072995201099512
+nstm=450
+lrte=0.5229690768327637
 max_depth=13
-subsample=0.022758076168221588
-colsample_bytree=0.2640681196500122
+subsample=0.20667691133238383
+colsample_bytree=0.3537459498816498
 #colsample_bynode=1
-num_parallel_tree=4
-a=0.2813150838555063
+num_parallel_tree=1
+a=0.8983882172207391
 
 # initialize and tune model
 xgbr=xgb.XGBRegressor(

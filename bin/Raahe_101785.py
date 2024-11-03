@@ -13,7 +13,7 @@ endy=end[0:4]
 fname = 'training_data_oceanids_Raahe-sf_2013-2023.csv' # training input data file
 mdl_name='mdl_'+pred+'_2013-2023_sf_Raahe.txt'
 fscorepic='Fscore_'+pred+'-sf-Raahe.png'
-xgbstudy='xgb-'+pred+'-Raahe'
+xgbstudy='xgb-'+pred+'-Raahe-testi'
 obsfile='obs-oceanids-'+start+'-'+end+'-all-'+harbor+'-daymean-daymax.csv'
 
 test_y=[2017,2023]

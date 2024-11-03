@@ -1,21 +1,32 @@
-import os,optuna,time,warnings
+import os,optuna,time,warnings,joblib
 import sklearn.metrics
 from sklearn.metrics import mean_squared_error
 import pandas as pd
 import xgboost as xgb
 import numpy as np
-#from Raahe_101785 import * 
-#from Vuosaari_151028 import *
-from Malaga_000231_simple import *
-
+import importlib,sys
+# give the name of the module as cmd argument
 warnings.filterwarnings("ignore")
 ### XGBoost with Optuna hyperparameter tuning for OCEANIDS
 # note: does not save trained mdl
 startTime=time.time()
 
+# import harbor module
+if len(sys.argv) != 2:
+    print("Usage: python script.py <module_name>")
+    sys.exit(1)    
+module_name = sys.argv[1]    
+print(module_name)
+try:
+    module = importlib.import_module(module_name)
+    print(f"Successfully imported {module_name}")
+    globals().update({k: getattr(module, k) for k in dir(module) if not k.startswith("__")})
+except ImportError:
+    print(f"Failed to import {module_name}")
+
 data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/' # training data
-mod_dir='/home/ubuntu/data/ML/models/OCEANIDS' # saved mdl
-res_dir='/home/ubuntu/data/ML/results/OCEANIDS'
+mod_dir='/home/ubuntu/data/ML/models/OCEANIDS/' # saved mdl
+res_dir='/home/ubuntu/data/ML/results/OCEANIDS/'
 optuna_dir='/home/ubuntu/data/ML/' # optuna storage
 
 # move to correct dir for optuna study 
@@ -45,14 +56,23 @@ def objective(trial):
     bst = xgbr.fit(train_x,train_y,eval_set=eval_set)
     preds = bst.predict(valid_x)
     accuracy = np.sqrt(mean_squared_error(valid_y,preds))
-    print("accuracy: "+str(accuracy))
+    print("RMSE: "+str(accuracy))
+    
+    # Save model if it's the best so far
+    if not hasattr(objective, 'best_rmse'):  # Initialize best_rmse if it doesn't exist
+        objective.best_rmse = float('inf')
+    if accuracy < objective.best_rmse:
+        objective.best_rmse = accuracy
+        joblib.dump(xgbr, mod_dir+mdl_name+"best_optuna.txt")  # Save model to file
+        print("New best model saved with RMSE:", accuracy)
+
     return accuracy
 
 
 ### Read in training data, split to preds and vars
 print(fname)
-#df=pd.read_csv(data_dir+fname,usecols=cols_own)
-df=pd.read_csv(data_dir+fname)
+df=pd.read_csv(data_dir+fname,usecols=cols_own)
+#df=pd.read_csv(data_dir+fname)
 
 
 # drop NaN values
