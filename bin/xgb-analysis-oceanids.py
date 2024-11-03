@@ -1,4 +1,4 @@
-import xgboost as xgb
+import xgboost as xgb # type: ignore
 import time
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 #from Rauma_101061 import *
 #from Rauma_101061_simple import *
 #from Rauma_101061_FGo import *
-from Malaga_000231 import *
+from Malaga_000231 import * # type: ignore
 
 
 startTime=time.time()
@@ -31,8 +31,8 @@ mdls_dir='/home/ubuntu/data/ML/models/OCEANIDS/' # saved mdl
 res_dir='/home/ubuntu/data/ML/results/OCEANIDS/'
 
 # read in predictors in the fitted model from training data file
-print(fname)
-df=pd.read_csv(data_dir+fname,usecols=cols_own)
+print(fname) # type: ignore
+df=pd.read_csv(data_dir+fname,usecols=cols_own) # type: ignore
 df=df.dropna(axis=1, how='all')
 s1=df.shape[0]
 df=df.dropna(axis=0,how='any')
@@ -43,12 +43,12 @@ df['utctime']= pd.to_datetime(df['utctime'])
 #headers=list(df) # list column headers
 #preds=list(df[headers].drop(droplist, axis=1))
 #print(preds)
-preds=list(df.drop(['utctime',pred], axis=1))
+preds=list(df.drop(['utctime',pred], axis=1)) # type: ignore
 print(preds)
 
 ## F-score
 print("start fscore")
-mdl=mdls_dir+mdl_name
+mdl=mdls_dir+mdl_name # type: ignore
 models=[]
 fitted_mdl=xgb.XGBRegressor()
 fitted_mdl.load_model(mdl)
@@ -75,10 +75,10 @@ print(mean_scores)
 f, ax = plt.subplots(1,1,figsize=(6, 10))
 mean_scores.plot.barh(ax=ax, legend=False)
 ax.set_xlabel('F score')
-ax.set_title(mdl_name)
+ax.set_title(mdl_name) # type: ignore
 ax.set_xscale('log')
 plt.tight_layout()
-f.savefig(res_dir+fscorepic, dpi=200)
+f.savefig(res_dir+fscorepic, dpi=200) # type: ignore
 #plt.show()
 plt.clf(); plt.close('all')
 
