@@ -10,7 +10,7 @@ The time it takes to run the model training dependes f.ex. on the number of loca
 ## Dependencies
 To create xgb environment used in this project, check out the `requirements.txt` file.
 
-To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. You will need to register for an ECMWF account to download data from CDs. 
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. You will need to register for an ECMWF account to download data from CDS. 
 
 Instructions for Optuna and Optuna Dashboard at https://optuna.org.
 
