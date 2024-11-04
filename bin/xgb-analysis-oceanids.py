@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 #from Rauma_101061_FGo import *
 from Malaga_000231 import * # type: ignore
 
-
 startTime=time.time()
 
 def filter_points(df,lat,lon,nro,name):
