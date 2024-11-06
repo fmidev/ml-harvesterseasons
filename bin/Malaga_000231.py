@@ -36,7 +36,6 @@ cols_own=['utctime',pred,#'dayOfYear',#'hour',
 'td2-1','td2-2','td2-3','td2-4',
 'tlwc-1','tlwc-2','tlwc-3','tlwc-4',
 'tp-1','tp-2','tp-3','tp-4',
-#'tsea-1',
-'tsea-2','tsea-3','tsea-4', # in sf was nan everywhere
+#'tsea-1','tsea-2','tsea-3','tsea-4', # in sf was nan everywhere
 'u10-1','u10-2','u10-3','u10-4','v10-1','v10-2','v10-3','v10-4'
 ]

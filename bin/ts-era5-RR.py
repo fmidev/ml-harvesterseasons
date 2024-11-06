@@ -2,10 +2,7 @@
 import time, warnings,requests,json
 import pandas as pd
 import warnings
-#from Raahe_101785 import * # import bbox, harbor, FMISID, cols_own, fname, test_y, train_y, mdl_name
-#from Vuosaari_151028 import *
-#from Rauma_101061 import *
-from Malaga_000231_simple import *
+import functions as fcts
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # SmarMet-server timeseries query to fetch ERA5 training data for ML
 # training data preprocessed to match seasonal forecast (sf) data for prediction
@@ -13,29 +10,67 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 startTime=time.time()
 
-def filter_points(df,lat,lon,nro,name):
-    df0=df.copy()
-    filter1 = df0['latitude'] == lat
-    filter2 = df0['longitude'] == lon
-    df0.where(filter1 & filter2, inplace=True)
-    df0.columns=['lat-'+str(nro),'lon-'+str(nro),name+'-'+str(nro)] # change headers      
-    df0=df0.dropna()
-    return df0
+data_dir='/home/ubuntu/data/ML/training-data/RR/'
+era5_dir=data_dir+'era5/' 
 
-data_dir='/home/ubuntu/data/ML/training-data/OCEANIDS/'+harbor+'/' 
+eobsinfo=data_dir+'eobs/eobsStaidInfo_reduced.csv'
+eobs_df=pd.read_csv(eobsinfo)
 
-# 00 UTC predictors
-predictors_instant = [
+lat=eobs_df['LAT'].values.tolist()
+lon=eobs_df['LON'].values.tolist()
+point_ids=eobs_df['STAID'].values.tolist()
+points = [f"{point_id:06d}" for point_id in point_ids]
+
+llpdict={i:[j, k] for i, j, k in zip(points,lat, lon)}
+llpdict={k:llpdict[k] for k in list(llpdict.keys())[:-1]}
+
+# static predictors
+statics = [
+    {'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    {'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    {'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    {'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    {'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+]
+
+# 00 and 12 UTC predictors
+predictors_0012 = [
     #{'u10':'U10-MS:ERA5:5021:1:0:1:0'}, # 10m u-component of wind (6h instantanous)
     #{'v10':'V10-MS:ERA5:5021:1:0:1:0'}, # 10m v-component of wind (6h instantanous)
     #{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature (6h instantanous)
     #{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature (6h instantanous)
-    #{'lsm':'LC-0TO1:ERA5:5021:1:0:1:0'}, # land-sea mask (static)
     #{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
     #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
     #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
-    {'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'kx': 'KX:ERA5:5021:1:0:0'}, # K index
+    #{'sd': 'SD-M:ERA5:5021:1:0:1:0'}, # snow depth
+    #{'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K        
+    #{'t700': 'T-K:ERA5:5021:2:700:1:0'},  
+    #{'t500': 'T-K:ERA5:5021:2:500:1:0'},
+    #{'q850': 'Q-KGKG:ERA5:5021:2:850:1:0'}, # specific humidity in kg/kg
+    #{'q700': 'Q-KGKG:ERA5:5021:2:700:1:0'},
+    #{'q500': 'Q-KGKG:ERA5:5021:2:500:1:0'},
+    #{'u850': 'U-MS:ERA5:5021:2:850:1:0'}, # U comp of wind in m/s
+    #{'u700': 'U-MS:ERA5:5021:2:700:1:0'},
+    #{'u500': 'U-MS:ERA5:5021:2:500:1:0'},
+    #{'v850': 'V-MS:ERA5:5021:2:850:1:0'}, # V comp of wind in m/s
+    #{'v700': 'V-MS:ERA5:5021:2:700:1:0'},
+    #{'v500': 'V-MS:ERA5:5021:2:500:1:0'},
+    #{'z850': 'Z-M2S2:ERA5:5021:2:850:1:0'}, # geopotential in m2 s-2
+    #{'z700': 'Z-M2S2:ERA5:5021:2:700:1:0'},
+    #{'z500': 'Z-M2S2:ERA5:5021:2:500:1:0'},    
+    ]
+
+# 00 predictors 
+predictors_00 = [
+    #{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor here
+    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, #
+    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, #
+    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, #
+    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'} #
 ]
+
 # previous day 24h sums 
 predictors_24hAgg = [
     #{'ewss':'sum_t(EWSS-NM2S:ERA5:5021:1:0:1:0/24h/0h)'}, # eastward turbulent surface stress (24h aggregation since beginning of forecast)
@@ -49,135 +84,72 @@ predictors_24hAgg = [
     #{'strd':'sum_t(RADLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface thermal radiation downwards (24h aggregation since beginning of forecast)
     #{'tp':'sum_t(RR-M:ERA5:5021:1:0:1:0/24h/0h)'} # total precipitation (24h aggregation since beginning of forecast)
 ]
-# previous day maximum 
+# previous day maximum (or minimum)
 predictor_24hmax = [
     #{'fg10':'max_t(FFG-MS:ERA5:5021:1:0:1:0/24h/0h)'}, # 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
+    #{'mx2t': 'max_t(TMAX-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Maximum temperature
+    #{'mn2t': 'min_t(TMIN-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Minimum temperature
+
 ]
+
 source='desm.harvesterseasons.com:8080' # server for timeseries query
-# get grid point lats lons (have to add parameter to query otherwise only one grid point is returned...)
-query='http://'+source+'/timeseries?bbox='+bbox+'&param=utctime,latitude,longitude,U10-MS:ERA5:5021:1:0:1:0&starttime='+start+'&endtime='+start+'&hour=0&format=json&precision=full&tz=utc&timeformat=sql'
-#print(query)
-response=requests.get(url=query)
-results_json=json.loads(response.content)
-rs=results_json[0]
-for key,val in rs.items():
-    if key=='latitude':   
-        lats=val.strip('[]').split()
-    if key=='longitude':   
-        lons=val.strip('[]').split()
-lat1,lon1,lat2,lon2,lat3,lon3,lat4,lon4=lats[0],lons[0],lats[1],lons[1],lats[2],lons[2],lats[3],lons[3]
-# Vuosaari latlons (manually chosen before)
-#lat1,lon1,lat2,lon2,lat3,lon3,lat4,lon4='60.0000000000000000','25.0000000000000000','60.2500000000000000','25.2500000000000000','60.2500000000000000','25.0000000000000000','60.0000000000000000','25.2500000000000000'
-#print(lat1,lon1,lat2,lon2,lat3,lon3,lat4,lon4)
+y_start,y_end='2000','2020'
 
-# Timeseries query for predictors_instants at 00 UTC
-for pred in predictors_instant:
-    key,value=list(pred.items())[0]
-    name=key
+# static parameters 
+for pardict in statics:
+    hour='00'
+    start=y_start+'0101T000000Z'
+    end=y_end+'1231T000000Z'
+    key,value=list(pardict.items())[0]
+    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     print(key)
-    query='http://'+source+'/timeseries?bbox='+bbox+'&param=utctime,latitude,longitude,'+value+'&starttime='+start+'&endtime='+end+'&hour=0&format=json&precision=full&tz=utc&timeformat=sql'
-    print(query)
-    response=requests.get(url=query)
-    results_json=json.loads(response.content)
-    print(results_json)
-    for i in range(len(results_json)):
-        res1=results_json[i]
-        for key,val in res1.items():
-            if key!='utctime':   
-                res1[key]=val.strip('[]').split()
-    df=pd.DataFrame(results_json)  
-    df.columns=['utctime','latitude','longitude',name] # change headers      
-    expl_cols=['latitude','longitude',name]
-    df=df.explode(expl_cols)
     print(df)
-    df.set_index('utctime',inplace=True)
-    # filter points
-    df1=filter_points(df,lat1,lon1,1,name)
-    df2=filter_points(df,lat2,lon2,2,name)
-    df3=filter_points(df,lat3,lon3,3,name)
-    df4=filter_points(df,lat4,lon4,4,name)
-    # merge dataframes
-    df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()
-    print(df_new)
-    # save to csv file
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-check-'+harbor+'.csv',index=False) 
-    df_new = df_new.drop(['utctime', 'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4'], axis=1)
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-use-'+harbor+'.csv',index=False) 
-    
-    # save utctime, lat/lon info to csv file (run once with u10, then comment out)
-    #df_new = df_new.drop(['u10-1', 'u10-2','u10-3','u10-4'], axis=1)
-    #print(df_new)
-    #df_new.to_csv(data_dir+'era5-oceanids-utctime-lat-lon-'+start+'-'+end+'-'+harbor+'.csv',index=False) 
+    for point in llpdict.keys():
+        dfpoint = df[df['pointID'] == point].reset_index(drop=True)
+        dfpoint.to_csv(era5_dir+'era5-'+key+'_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
+        if key=='z': # save utctime, lat, lon, pointID for each station to csv
+            dfpoint[['utctime','latitude','longitude','pointID']].to_csv(era5_dir+'era5-utctime-lat-lon-pointID-_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
 
-# Timeseries query for predictors_24hAgg
-for pred in predictors_24hAgg:
-    key,value=list(pred.items())[0]
-    name=key
+# 00 and 12 parameters
+for pardict in predictors_0012:
+    hour='00'
+    start=y_start+'0101T000000Z'
+    end=y_end+'1231T000000Z'
+    key,value=list(pardict.items())[0]
+    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     print(key)
-    query='http://'+source+'/timeseries?bbox='+bbox+'&param=utctime,latitude,longitude,'+value+'&starttime='+start+'&endtime='+end+'&hour=0&format=json&precision=full&tz=utc&timeformat=sql'
-    print(query)
-    response=requests.get(url=query)
-    results_json=json.loads(response.content)
-    print(results_json)    
-    for i in range(len(results_json)):
-        res1=results_json[i]
-        for key,val in res1.items():
-            if key!='utctime':   
-                res1[key]=val.strip('[]').split()
-    df=pd.DataFrame(results_json)  
-    df.columns=['utctime','latitude','longitude',name] # change headers      
-    expl_cols=['latitude','longitude',name]
-    df=df.explode(expl_cols)
     print(df)
-    df['utctime']= pd.to_datetime(df['utctime'])
-    df.set_index('utctime',inplace=True)
-    # filter points
-    df1=filter_points(df,lat1,lon1,1,name)
-    df2=filter_points(df,lat2,lon2,2,name)
-    df3=filter_points(df,lat3,lon3,3,name)
-    df4=filter_points(df,lat4,lon4,4,name)
-    # merge dataframes
-    df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()
-    print(df_new)
-    # save to csv file
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-check-'+harbor+'.csv',index=False) 
-    df_new = df_new.drop(['utctime', 'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4'], axis=1)
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-use-'+harbor+'.csv',index=False)
+    df.rename({key:key+'-00'}, axis=1, inplace=True)
+    #print(df)
+    for point in llpdict.keys():
+        dfpoint = df[df['pointID'] == point].reset_index(drop=True)
+        dfpoint.to_csv(era5_dir+'era5-'+key+'-00_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
+    hour='12'
+    start=y_start+'0101T000000Z'
+    end=y_end+'1231T000000Z' 
+    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
+    df.rename({key:key+'-12'}, axis=1, inplace=True)
+    df['utctime']=df['utctime'].dt.date
+    print(df)
+    for point in llpdict.keys():
+        dfpoint = df[df['pointID'] == point].reset_index(drop=True)
+        dfpoint.to_csv(era5_dir+'era5-'+key+'-12_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
 
-# Timeseries query for predictor_24hmax
-for pred in predictor_24hmax:
-    key,value=list(pred.items())[0]
-    name=key
+# 00 parameters
+for pardict in predictors_00:
+    hour='00'
+    start=y_start+'0101T000000Z'
+    end=y_end+'1231T000000Z'
+    key,value=list(pardict.items())[0]
+    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     print(key)
-    query='http://'+source+'/timeseries?bbox='+bbox+'&param=utctime,latitude,longitude,'+value+'&starttime='+start+'&endtime='+end+'&hour=0&format=json&precision=full&tz=utc&timeformat=sql'
-    print(query)
-    response=requests.get(url=query)
-    results_json=json.loads(response.content)
-    #print(results_json)    
-    for i in range(len(results_json)):
-        res1=results_json[i]
-        for key,val in res1.items():
-            if key!='utctime':   
-                res1[key]=val.strip('[]').split()
-    df=pd.DataFrame(results_json)  
-    df.columns=['utctime','latitude','longitude',name] # change headers      
-    expl_cols=['latitude','longitude',name]
-    df=df.explode(expl_cols)
     print(df)
-    df['utctime']= pd.to_datetime(df['utctime'])
-    df.set_index('utctime',inplace=True)
-    # filter points
-    df1=filter_points(df,lat1,lon1,1,name)
-    df2=filter_points(df,lat2,lon2,2,name)
-    df3=filter_points(df,lat3,lon3,3,name)
-    df4=filter_points(df,lat4,lon4,4,name)
-    # merge dataframes
-    df_new = pd.concat([df1,df2,df3,df4],axis=1,sort=False).reset_index()
-    print(df_new)
-    # save to csv file
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-check-'+harbor+'.csv',index=False) 
-    df_new = df_new.drop(['utctime', 'lat-1','lon-1','lat-2','lon-2','lat-3','lon-3','lat-4','lon-4'], axis=1)
-    df_new.to_csv(data_dir+'era5-oceanids-'+name+'-'+start+'-'+end+'-use-'+harbor+'.csv',index=False)
+    for point in llpdict.keys():
+        dfpoint = df[df['pointID'] == point].reset_index(drop=True)
+        dfpoint.to_csv(era5_dir+'era5-'+key+'_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
+
+# previous day 24h sums
+# previous day maximum or minimum
 
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))

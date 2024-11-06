@@ -3,7 +3,7 @@ import requests, os, time, glob, json, sys
 import pandas as pd
 from functools import reduce
 
-import functions as fcts
+# import functions as fcts
 import numpy as np
 import itertools
 import warnings
@@ -14,16 +14,79 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 startTime = time.time()
 
 path_ismn_dir = "/home/ubuntu/data/ML/validation-data/soiltemp/ismn/20231101_20241101/"
-source = "desm.harvesterseasons.com:8080"
+source =  "desm.harvesterseasons.com:8080"
 
 
 # nan values
 nan = float("nan")
 
 
-
 # eu_data = pd.read_csv(path_eu_data,sep=";")
 pd.options.display.max_columns = None
+
+
+
+def smartmet_ts_query_multiplePointsByID_tstep(source,start,end,tstep,pardict,llpdict):
+    #timeseries query to smartmet-server
+    #start date, end date, timestep, list of lats&lons, parameters as dictionary
+    #returns dataframe
+    latlons=[]
+    for pair in llpdict.values():
+        for i in pair:
+            latlons.append(i)
+    staids=[]
+    for key in llpdict.keys():
+        staids.append(key)
+    
+    # Timeseries query
+    query='http://'+source+'/timeseries?latlons='
+    for nro in latlons:
+        query+=str(nro)+','
+    query=query[0:-1]
+    query+='&param=utctime,'
+    for par in pardict.values():
+        query+=par+','
+        query=query[0:-1]
+    #query+='&starttime='+start+'&endtime='+end+'&timestep='+tstep+'&hour=00&format=json&precision=full&tz=utc&timeformat=sql&grouplocations=1'  # test
+    query+='&starttime='+start+'&endtime='+end+'&timestep='+tstep+'&format=json&precision=full&tz=utc&timeformat=sql&grouplocations=1'  # this one
+    #query+='&starttime='+start+'&endtime='+end+'&timestep=data&format=json&precision=full&producer=EDTE&tz=utc&timeformat=sql&grouplocations=1'
+    print(query)
+
+    # Response to dataframe
+    response=requests.get(url=query)
+    results_json=json.loads(response.content)
+    #print(results_json)
+    for i in range(len(results_json)):
+        res1=results_json[i]
+        for key,val in res1.items():
+            if key != 'utctime' and isinstance(val, str):   
+                res1[key] = val.strip('[]').split()
+    df=pd.DataFrame(results_json)   
+    df.columns=['utctime']+list(pardict.keys()) # change headers to params.keys
+    df['utctime']=pd.to_datetime(df['utctime'])
+    expl_cols=list(pardict.keys())
+    df=df.explode(expl_cols)
+    df['latlonsID'] = df.groupby(level=0).cumcount().add(1).astype(str).radd('')
+    df=df.reset_index(drop=True)
+    df['latlonsID'] = df['latlonsID'].astype('int')
+    max=df['latlonsID'].max()
+    df['latitude']=''
+    df['longitude']=''
+    df['pointID']=''
+    i=1
+    j=0
+    while i <= max:
+        df.loc[df['latlonsID']==i,'latitude']=latlons[j]
+        df.loc[df['latlonsID']==i,'longitude']=latlons[j+1]
+        df.loc[df['latlonsID']==i,'pointID']=staids[i-1]
+        j+=2
+        i+=1
+    df=df.drop(columns='latlonsID')
+    df=df.astype({col: 'float32' for col in df.columns[1:-1]})
+    #print(df)
+    return df
+
+
 
 
 # function to merge dfs
@@ -78,7 +141,7 @@ for file in txt_files:
         file, sep=r"\s+", header=None
     )  # Using regex to handle multiple types of tabs and spaces
     df.columns = column_names
-    
+
     ismn_df = pd.concat([ismn_df, df], ignore_index=True)
 
 
@@ -111,50 +174,48 @@ pointids = list(range(len(staion_lat_long)))
 llpdict = {i: [j, k] for i, j, k in zip(pointids, lat, lon)}
 
 
-# # EXAMPLE get subdict based on list of pointids:
-# # pointids = list(range(1,10))
-# # llpdict = dict((k, llpdict[k]) for k in pointids
-# #            if k in llpdict)
-# # print(llpdict)
+# EXAMPLE get subdict based on list of pointids:
+# pointids = list(range(1, 2))
+# llpdict = dict((k, llpdict[k]) for k in pointids if k in llpdict)
+# print(llpdict)
 
 # ### EDTE predictors
 # # 24h accumulations
 edte = [
-    {'stl1x':'STL1X-C:EDTE:5068:1:0:1:0'},  # Surface latent heat flux (J m-2)
-    ]
-stl1_df = pd.DataFrame(columns=["utctime", "latitude", "longitude", "pointID"])
+    {"stl1x": "STL1X-C:EDTE:5068:1:0:0"},  # Surface latent heat flux (J m-2)
+]
+temp_df = pd.DataFrame(columns=["utctime", "latitude", "longitude", "pointID"])
 
 # start = begin_year + "-11-01T00:00:00Z"  # start date
 # end = end_year + "-11-01T23:59:59Z"  # end date
 # start = "20231101T000000Z"
 # end = "20241131T000000Z"
-start = "20231101T"
-end = "20241101T"
+
+timestamp = "data"
+
+y_start='2023'
+y_end='2024'
+nan=float('nan')
+source='desm.harvesterseasons.com:8080'
+start=y_start+'-11-01T00:00:00Z'
+end=y_end+'-11-01T23:59:59Z'
 
 for pardict in edte:
-    for hour in ["000000Z", "060000Z", "120000Z", "180000Z", "235959Z"]:
-        start = start + hour
-        end = end + hour
-        
-        key, value = list(pardict.items())[0]
-        print(source, start, end, hour, pardict, llpdict)
-        temp_df = fcts.smartmet_ts_query_multiplePointsByID_hour(
-            source, start, end, hour, pardict, llpdict
-        )
-        print(temp_df.head(),"head")
-        print(len(temp_df), "rows in the dataframe")
-        print(temp_df.columns, "columns")
-        print(temp_df.dtypes, "dtypes")
-        print(temp_df.tail(),"tail")
-        stl1_df = merge_df(stl1_df, temp_df)
+    
 
-# stl1_df.to_csv(
-#     "/home/ubuntu/data/ML/validation-data/soiltemp/ismn/20231101_20241101/timeseries_stl1x_20231101_20241101.csv",
-#     index=False,
-# )
+    key, value = list(pardict.items())[0]
+
+    temp_df = smartmet_ts_query_multiplePointsByID_tstep(source,start,end,timestamp,pardict,llpdict)
+    print(temp_df.head(), "head")
+    print(len(temp_df), "rows in the dataframe")
+    print(temp_df.columns, "columns")
 
 
-
+temp_df.to_csv(
+    "/home/ubuntu/data/ML/validation-data/soiltemp/ismn/20231101_20241101/timeseries_stl1x_20231101_20241101.csv",
+    index=False,
+)
+# Query URL: http://desm.harvesterseasons.com:8080/timeseries?latlon=41.26504,-5.38049,41.39392,-5.32146,41.3001,-5.24704&param=utctime,STL1X-C:EDTE:5068:1:0:1:0&starttime=20231101T060000Z&endtime=20241101T060000Z&hour=06&format=json&precision=full&tz=utc&timeformat=sql&grouplocations=1
 
 # combine time series data
 

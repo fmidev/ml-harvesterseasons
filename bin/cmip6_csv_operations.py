@@ -3,7 +3,7 @@ import os
 
 # Adjust files with something like(depends on file names): parallel 'sed "s/ \+/,/g" {} > ece3-(name of loc)-{= s:ece3-([^--]+)--.*\.csv$:\1: =}.csv' ::: *(**coordinates**)*.csv first
 
-loc = "cadiz"
+loc = "ploumanach"
 preds = ["pr", "sfcWind", "tasmax", "tasmin"]
 
 # Construct file paths for each predictor
