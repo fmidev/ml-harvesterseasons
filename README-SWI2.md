@@ -1,6 +1,6 @@
 # Training a model to forecast soil water index (SWI) with gradient boosting
 
-This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Gradient boosting-based soil wetness for forestry climate adaptation in HarvesterSeasons service -training a model to forecast soil water index from a comprehensive set of IFS model predictors in Destination Earth`
+This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Forestry climate adaptation with HarvesterSeasons service - a gradient booting model to forecast soil water index SWI from a comprehensive set of IFS model predictors in Destination Earth `
 
 ## System requirements
 Python version 3.10.13 in the UNIX/Linux environment was used in this project.
@@ -10,6 +10,7 @@ The time it takes to run the model training dependes f.ex. on the number of loca
 ## Dependencies
 To create xgb environment used in this project, check out the `requirements.txt` file.
 
+To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. You will need to register for an ECMWF account to download data from CDS. 
 To download the seasonal forecast data etc from the Climate Data Store, the CDS API client needs to be installed https://cds.climate.copernicus.eu/api-how-to. You will need to register for an ECMWF account to download data from CDS.
 
 Instructions for Optuna and Optuna Dashboard at https://optuna.org.
@@ -55,4 +56,5 @@ To create the F-score (feature importance) figure, run `xgb-analysis-soilwater.p
 ## Predicting soil water index
 Scripts for predicting SWI2 can be found from https://github.com/fmidev/harvesterseasons-smartmet/tree/destine/bin. Predicting SWI2 requires first downloading the data and pre-processing as all input data must be re-gridded. `get-seasonal.sh` downloads (latest or user-specified start month+year) and remaps the seasonal forecast (https://cds.climate.copernicus.eu/cdsapp#!/dataset/seasonal-original-single-levels?tab=overview) and other necessary data to ERA5-Land grid for the European area. The script performs also statistical bias-adjusting and downscaling for several parameters. Preprocessing uses the GNU parallel and CDO. Similar processing with get-edte.sh.
 
+Predicting with the trained model happens with `run-xgb-predict-swi2.sh`, and `xgb-predict-swi2.py` (seasonal forecast) or `xgb-predict-edte.py` (EDTE), with input gribs from previous bash scripts. These Python scripts use Xarray to join different input grids into one data frame that includes all time steps for each input in the target grid. Then prediction for SWI2 is made with XGBoost predict with the previously trained model. Ready file is then returned to the bash script so that the resulting grib file is fixed and the end product is set up to our SmartMet server ( https://desm.harvesterseasons.com/grid-gui?session=bg=light;bl=1;cl=Grey;cm=None;f=;fn=;ft=;g=;gm=;hu=128;is=DarkGrey;iv=Generated;k=;l=;lb=Grey;lm=LightGrey;lo=None;lt=;m=0;max=16;mi=Default;min=6;p=;pg=main;pi=;pn=;pre=Image;pro=;sa=60;sm=LightCyan;st=10;sy=None;t=;tg=;tgt=Month;u=;xx=;yy=;&pi=16). 
 Predicting with the trained model happens with `run-xgb-predict-swi2.sh`, and `xgb-predict-swi2.py` (seasonal forecast) or `xgb-predict-edte.py` (EDTE), with input gribs from previous bash scripts. These Python scripts use Xarray to join different input grids into one data frame that includes all time steps for each input in the target grid. Then prediction for SWI2 is made with XGBoost predict with the previously trained model. Ready file is then returned to the bash script so that the resulting grib file is fixed and the end product is set up to our SmartMet server ( https://desm.harvesterseasons.com/grid-gui?session=bg=light;bl=1;cl=Grey;cm=None;f=;fn=;ft=;g=;gm=;hu=128;is=DarkGrey;iv=Generated;k=;l=;lb=Grey;lm=LightGrey;lo=None;lt=;m=0;max=16;mi=Default;min=6;p=;pg=main;pi=;pn=;pre=Image;pro=;sa=60;sm=LightCyan;st=10;sy=None;t=;tg=;tgt=Month;u=;xx=;yy=;&pi=16). 
