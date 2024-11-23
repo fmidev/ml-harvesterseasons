@@ -12,35 +12,23 @@ preds = {
     # Add more predictors here as needed
 }
 id = sys.argv[2]
-file_name = f'ece3-{loc}.csv'
-output_file_name = f'ece3-{loc.capitalize()}.csv'
+file_name = f'training_data_oceanids-{loc}-sf_2000-2023.csv'
+output_file_name = f'training_data_oceanids-{loc}-sf_2000-2023.csv'
 
 # Define the start and end dates
-start_date = sys.argv[3]
+start_date = '2000-01-01'
 start_date = pd.to_datetime(start_date)
-end_date = sys.argv[4]
+end_date = '2023-08-31'
 end_date = pd.to_datetime(end_date)
 
 # Load your main dataset
-main_df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/{file_name}')
+main_df = pd.read_csv(f'/home/ubuntu/data/ML/training-data/OCEANIDS/{loc}/{file_name}')
 
-# Rename the 'date' column to 'utctime'
-main_df.rename(columns={'date': 'utctime'}, inplace=True)
-
-# Ensure the 'date' column is in datetime format
+# Ensure the 'utctime' column is in datetime format
 main_df['utctime'] = pd.to_datetime(main_df['utctime'], format='%Y-%m-%d', errors='coerce')  # Handle invalid dates if needed
 
 # Filter out rows before and after specified dates
 main_df = main_df[(main_df['utctime'] >= start_date) & (main_df['utctime'] <= end_date)].copy()
-
-# Function to find the starting line with real values
-def find_start_line(file_path):
-    with open(file_path, 'r') as f:
-        for i, line in enumerate(f):
-            columns = line.strip().split(',')
-            if len(columns) >= 4 and columns[3].strip() != '-9999':
-                return i
-    return -1  # Return -1 if no valid value is found
 
 # Loop through each predictor, read data from its respective text file, and add to main_df
 for pred, pred_name in preds.items():
@@ -48,16 +36,10 @@ for pred, pred_name in preds.items():
     dates = []
 
     file_path = f'/home/ubuntu/data/eobs/{pred.lower()}_blend/{pred}_STAID{id}.txt'
-    start_line = find_start_line(file_path)
-
-    if start_line == -1:
-        print(f"No valid values found for predictor '{pred}'.")
-        continue
 
     # Read the specific lines from the text file for the current predictor
     with open(file_path) as f:
         for i, line in enumerate(f):
-            if i >= start_line:
                 columns = line.strip().split(',')  # Split by comma
                 if len(columns) >= 4:  # Check if there is a fourth column
                     dates.append(columns[2].strip())  # Append the date column
@@ -86,9 +68,6 @@ for pred, pred_name in preds.items():
 
 #Add dayofyear column
 main_df['dayofyear'] = main_df['utctime'].dt.dayofyear
-
-# Replace -9999 with NaN across the DataFrame
-main_df.replace(-9999, np.nan, inplace=True)
 
 # Save the updated dataset to a new CSV file
 main_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/{output_file_name}", index=False)

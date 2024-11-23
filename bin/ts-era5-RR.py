@@ -24,13 +24,15 @@ points = [f"{point_id:06d}" for point_id in point_ids]
 llpdict={i:[j, k] for i, j, k in zip(points,lat, lon)}
 llpdict={k:llpdict[k] for k in list(llpdict.keys())[:-1]}
 
+y_start,y_end='2000','2020'
+
 # static predictors
 statics = [
-    {'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
-    {'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
-    {'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
-    {'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
-    {'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
+    #{'z': 'Z-M2S2:ERA5:5021:1:0:1:0'}, # geopotential in m2 s-2
+    #{'lsm': 'LC-0TO1:ERA5:5021:1:0:1:0'}, # Land sea mask: 1=land, 0=sea
+    #{'sdor': 'SDOR-M:ERA5:5021:1:0:1:0'}, # Standard deviation of orography
+    #{'slor': 'SLOR:ERA5:5021:1:0:1:0'}, # Slope of sub-gridscale orography
+    #{'anor': 'ANOR-RAD:ERA5:5021:1:0:1:0'}, # Angle of sub-gridscale orography
 ]
 
 # 00 and 12 UTC predictors
@@ -40,10 +42,9 @@ predictors_0012 = [
     #{'td2':'TD2-K:ERA5:5021:1:0:1:0'}, # 2m dewpoint temperature (6h instantanous)
     #{'t2':'T2-K:ERA5:5021:1:0:1:0'}, # 2m temperature (6h instantanous)
     #{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
-    #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
+    ##{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
     #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
     #{'kx': 'KX:ERA5:5021:1:0:0'}, # K index
-    #{'sd': 'SD-M:ERA5:5021:1:0:1:0'}, # snow depth
     #{'t850': 'T-K:ERA5:5021:2:850:1:0'}, # temperature in K        
     #{'t700': 'T-K:ERA5:5021:2:700:1:0'},  
     #{'t500': 'T-K:ERA5:5021:2:500:1:0'},
@@ -63,12 +64,12 @@ predictors_0012 = [
 
 # 00 predictors 
 predictors_00 = [
-    #{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'tclw':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
     #{'tcwv':'TOTCWV-KGM2:ERA5:5021:1:0:1:0'}, # total column water vapor here
-    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, #
-    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, #
-    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, #
-    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'} #
+    #{'swvl1':'SOILWET-M3M3:ERA5:5021:9:7:1:0'}, # volumetric soil water layer 1 (0-7cm) (24h instantanous)
+    #{'swvl2':'SWVL2-M3M3:ERA5:5021:9:1820:1:0'}, # volumetric soil water layer 2 (7-28cm) (24h instantanous)
+    #{'swvl3':'SWVL3-M3M3:ERA5:5021:9:7268:1:0'}, # volumetric soil water layer 3 (28-100cm) (24h instantanous)
+    #{'swvl4':'SWVL4-M3M3:ERA5:5021:9:25855:1:0'} # volumetric soil water layer 4 (100-289cm) (24h instantanous)
 ]
 
 # previous day 24h sums 
@@ -82,18 +83,14 @@ predictors_24hAgg = [
     #{'sshf':'sum_t(FLSEN-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface sensible heat flux (24h aggregation since beginning of forecast)
     #{'ssrd':'sum_t(RADGLOA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface solar radiation downwards (24h aggregation since beginning of forecast)
     #{'strd':'sum_t(RADLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface thermal radiation downwards (24h aggregation since beginning of forecast)
-    #{'tp':'sum_t(RR-M:ERA5:5021:1:0:1:0/24h/0h)'} # total precipitation (24h aggregation since beginning of forecast)
-]
-# previous day maximum (or minimum)
-predictor_24hmax = [
+    #{'tp':'sum_t(RR-M:ERA5:5021:1:0:1:0/24h/0h)'}, # total precipitation (24h aggregation since beginning of forecast)
+    #{'ttr':'sum_t(RTOPLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # top net thermal radiation (24h aggregation since beginning of forecast)
     #{'fg10':'max_t(FFG-MS:ERA5:5021:1:0:1:0/24h/0h)'}, # 10m wind gust since previous post-processing (24h aggregation: max value of previous day)
-    #{'mx2t': 'max_t(TMAX-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Maximum temperature
-    #{'mn2t': 'min_t(TMIN-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Minimum temperature
-
+    #{'mx2t': 'max_t(TMAX-K:ERA5:5021:1:0:1:0/24h/0h)'}, # Maximum temperature in the last 24h
+    #{'mn2t': 'min_t(TMIN-K:ERA5:5021:1:0:1:0/24h/0h)'} # Minimum temperature in the last 24h
 ]
 
 source='desm.harvesterseasons.com:8080' # server for timeseries query
-y_start,y_end='2000','2020'
 
 # static parameters 
 for pardict in statics:
@@ -116,14 +113,14 @@ for pardict in predictors_0012:
     start=y_start+'0101T000000Z'
     end=y_end+'1231T000000Z'
     key,value=list(pardict.items())[0]
-    df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
+    '''df=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
     print(key)
-    print(df)
     df.rename({key:key+'-00'}, axis=1, inplace=True)
-    #print(df)
+    print(df)
     for point in llpdict.keys():
         dfpoint = df[df['pointID'] == point].reset_index(drop=True)
         dfpoint.to_csv(era5_dir+'era5-'+key+'-00_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
+    '''
     hour='12'
     start=y_start+'0101T000000Z'
     end=y_end+'1231T000000Z' 
@@ -149,7 +146,23 @@ for pardict in predictors_00:
         dfpoint.to_csv(era5_dir+'era5-'+key+'_'+start+'-'+end+'_'+str(point)+'.csv',index=False)
 
 # previous day 24h sums
-# previous day maximum or minimum
+# could not fetch 20 years (returns NaN), doing it year by year
+for pardict in predictors_24hAgg:
+    hour='00'
+    key,value=list(pardict.items())[0]
+    print(key)
+    df_all_years=pd.DataFrame()
+        
+    for year in range(int(y_start),int(y_end)+1):
+        start=str(year)+'0101T000000Z'
+        end=str(year)+'1231T000000Z'
+        df_year=fcts.smartmet_ts_query_multiplePointsByID_hour(source,start,end,hour,pardict,llpdict)
+        df_all_years = pd.concat([df_all_years, df_year], ignore_index=True)
+        print(df_all_years)
+    
+    for point in llpdict.keys():
+        dfpoint = df_all_years[df_all_years['pointID'] == point].reset_index(drop=True)
+        dfpoint.to_csv(era5_dir+'era5-'+key+'_'+y_start+'-'+y_end+'_'+str(point)+'.csv',index=False)
 
 executionTime=(time.time()-startTime)
 print('Execution time in minutes: %.2f'%(executionTime/60))

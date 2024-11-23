@@ -11,8 +11,17 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 #from Rauma_101061_simple import *
 #from Rauma_101061 import *
 #from Rauma_101061_FGo import *
-from Malaga_000231 import *
-
+#from Malaga_000231 import *
+#from Sitia_023330_ece3 import *
+#from Cadiz_000415_ece3 import *
+#from Ploumanach_011245_ece3 import *
+#from Vuosaari_151028_cordex_ncc_dmi import *
+#from Aktio_023317_cordex_ncc_smhi import *
+#from Bremerhaven_004885 import *
+#from Vuosaari_151028_cordex_ncc_smhi import *
+#from Bremerhaven_004885_ece3 import *
+#from Vuosaari_151028_cordex_cnrm_cnrm import *
+from Bremerhaven_004885_ece3 import *
 
 warnings.filterwarnings("ignore")
 ### XGBoost for OCEANIDS
@@ -55,14 +64,14 @@ var_test=test_stations[var_headers]
 
 ### XGBoost
 # Define model hyperparameters (Optuna tuned)
-nstm=450
-lrte=0.5229690768327637
-max_depth=13
-subsample=0.20667691133238383
-colsample_bytree=0.3537459498816498
+nstm=702
+lrte=0.2394792064153895
+max_depth=4
+subsample=0.7932960772635375
+colsample_bytree=0.3871330342069024
 #colsample_bynode=1
-num_parallel_tree=1
-a=0.8983882172207391
+num_parallel_tree=9
+a=0.85970950766814
 
 # initialize and tune model
 xgbr=xgb.XGBRegressor(

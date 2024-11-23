@@ -1,27 +1,35 @@
+#!/bin/env python3
 import pandas as pd
 import os
 import sys
 
 loc = sys.argv[1]
-preds = ["pr", "sfcWind", "tasmax", "tasmin"]
+model = sys.argv[2]
+preds = ["pr", "sfcWind", "tasmax", "tasmin", "maxWind"]
 
 # Construct file paths for each predictor
-file_paths = [f"ece3-{loc}-{pred}.csv" for pred in preds]
+file_paths = [f"{model}-{loc}-rcp45-{pred}.csv" for pred in preds]
 all_dfs = []
+
+def custom_date_parser(date_str):
+    # Implement your custom date parsing logic here
+    # For example, you might convert "YYYYMMDD" to a standard date format
+    # Assuming date_str is in the format "YYYYMMDD"
+    year = int(date_str[:4])
+    month = int(date_str[4:6])
+    day = int(date_str[6:8])
+    
+    # Adjust the day and month to fit a 30-day month calendar
+    day = (day - 1) % 30 + 1
+    month = (month - 1) % 12 + 1
+    
+    return pd.Timestamp(year, month, day)
 
 for pred_index, file_path in enumerate(file_paths):
 
-    temp_file_path = f"/home/ubuntu/data/cmip6/temp_{os.path.basename(file_path)}"
-    
-    # Remove first 3 and last 4 lines from the file
-    with open(f"/home/ubuntu/data/cmip6/{file_path}", 'r') as infile, open(temp_file_path, 'w') as outfile:
-        lines = infile.readlines()
-        outfile.writelines(lines[3:-4])
-
     # Step 1: Load the CSV data
-    df = pd.read_csv(temp_file_path)
-
-    os.remove(temp_file_path)
+    df = pd.read_csv(f"/home/ubuntu/data/cordex/{file_path}", sep='\s+', header=0, names=['date', 'lat', 'lon', 'value'])
+    df['date'] = df['date'].apply(custom_date_parser)
 
     # Step 2: Create a unique identifier for each (lat, lon) pair
     df['Point'] = df.groupby(['lat', 'lon']).ngroup() + 1
@@ -53,10 +61,16 @@ for point in lat_lon_df.index:
     combined_df[f'lon-{point}'] = lon_columns[f'lon-{point}']
     lat_lon_columns.extend([f'lat-{point}', f'lon-{point}'])
 
+# Rename 'date' column to 'utctime'
+combined_df.rename(columns={'date': 'utctime'}, inplace=True)
+
+# Add dayofyear column
+combined_df['dayofyear'] = pd.to_datetime(combined_df['utctime']).dt.dayofyear
+
 # Reorder columns to place lat and lon columns after the date column
-combined_df = combined_df[['date'] + lat_lon_columns + [col for col in combined_df.columns if col not in ['date'] + lat_lon_columns]]
+combined_df = combined_df[['utctime'] + lat_lon_columns + [col for col in combined_df.columns if col not in ['utctime'] + lat_lon_columns]]
 
 # Save the combined DataFrame to a new CSV file
-combined_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-{loc}.csv", index=False)
+combined_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/{model}-{loc}-cordex.csv", index=False)
 
-print(combined_df)
+#print(combined_df)

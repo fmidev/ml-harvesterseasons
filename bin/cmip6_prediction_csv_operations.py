@@ -6,7 +6,7 @@ loc = sys.argv[1]
 preds = ["pr", "sfcWind", "tasmax", "tasmin"]
 
 # Construct file paths for each predictor
-file_paths = [f"ece3-{loc}-{pred}.csv" for pred in preds]
+file_paths = [f"ece3-pred-{loc}-{pred}.csv" for pred in preds]
 all_dfs = []
 
 for pred_index, file_path in enumerate(file_paths):
@@ -16,7 +16,7 @@ for pred_index, file_path in enumerate(file_paths):
     # Remove first 3 and last 4 lines from the file
     with open(f"/home/ubuntu/data/cmip6/{file_path}", 'r') as infile, open(temp_file_path, 'w') as outfile:
         lines = infile.readlines()
-        outfile.writelines(lines[3:-4])
+        outfile.writelines(lines[2:-3])
 
     # Step 1: Load the CSV data
     df = pd.read_csv(temp_file_path)
@@ -56,7 +56,12 @@ for point in lat_lon_df.index:
 # Reorder columns to place lat and lon columns after the date column
 combined_df = combined_df[['date'] + lat_lon_columns + [col for col in combined_df.columns if col not in ['date'] + lat_lon_columns]]
 
+combined_df = combined_df.rename(columns={'date': 'utctime'})
+
+combined_df['utctime'] = pd.to_datetime(combined_df['utctime'], errors='coerce')
+combined_df['dayofyear'] = combined_df['utctime'].dt.dayofyear
+
 # Save the combined DataFrame to a new CSV file
-combined_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/ece3-{loc}.csv", index=False)
+combined_df.to_csv(f"/home/ubuntu/data/ML/training-data/OCEANIDS/prediction_data_ece3-{loc}-2015-2050.csv", index=False)
 
 print(combined_df)

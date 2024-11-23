@@ -5,7 +5,8 @@ import warnings
 #from Raahe_101785 import * # import bbox, harbor, FMISID, cols_own, fname, test_y, train_y, mdl_name
 #from Vuosaari_151028 import *
 #from Rauma_101061 import *
-from Malaga_000231_simple import *
+#from Malaga_000231_simple import *
+from Bremerhaven_004885 import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # SmarMet-server timeseries query to fetch ERA5 training data for ML
 # training data preprocessed to match seasonal forecast (sf) data for prediction
@@ -34,7 +35,7 @@ predictors_instant = [
     #{'msl':'PSEA-HPA:ERA5:5021:1:0:1:0'}, # mean sea level pressure (6h instantanous)
     #{'tsea':'TSEA-K:ERA5:5021:1:0:1'}, # sea surface temperature (6h instantanous)
     #{'tcc':'N-0TO1:ERA5:5021:1:0:1:0'}, # total cloud cover (6h instantanous)
-    {'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
+    #{'tlwc':'TCLW-KGM2:ERA5:5021:1:0:1:0'}, # total column cloud liquid water (24h instantanous) 
 ]
 # previous day 24h sums 
 predictors_24hAgg = [
@@ -45,7 +46,7 @@ predictors_24hAgg = [
     #{'ssr':'sum_t(RNETSWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface net solar radiation (24h aggregation since beginning of forecast)
     #{'str':'sum_t(RNETLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface net thermal radiation (24h aggregation since beginning of forecast)
     #{'sshf':'sum_t(FLSEN-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface sensible heat flux (24h aggregation since beginning of forecast)
-    #{'ssrd':'sum_t(RADGLOA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface solar radiation downwards (24h aggregation since beginning of forecast)
+    {'ssrd':'sum_t(RADGLOA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface solar radiation downwards (24h aggregation since beginning of forecast)
     #{'strd':'sum_t(RADLWA-JM2:ERA5:5021:1:0:1:0/24h/0h)'}, # surface thermal radiation downwards (24h aggregation since beginning of forecast)
     #{'tp':'sum_t(RR-M:ERA5:5021:1:0:1:0/24h/0h)'} # total precipitation (24h aggregation since beginning of forecast)
 ]
