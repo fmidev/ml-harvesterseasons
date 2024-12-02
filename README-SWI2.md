@@ -1,6 +1,6 @@
 # Training a model to forecast soil water index (SWI) with gradient boosting
 
-This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Forestry climate adaptation with HarvesterSeasons service - a gradient booting model to forecast soil water index SWI from a comprehensive set of IFS model predictors in Destination Earth `
+This code reproduces the data and model training and prediction workflows used in `Strahlendorff et al.: Forestry climate adaptation with HarvesterSeasons service - a gradient boosting model to forecast soil water index SWI from a comprehensive set of IFS model predictors in Destination Earth `
 
 ## System requirements
 Python version 3.10.13 in the UNIX/Linux environment was used in this project.
