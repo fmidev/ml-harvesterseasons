@@ -1,11 +1,9 @@
 import xgboost as xgb
-import glob, sklearn, time, sys
+import time
 #import shap
-import functions as fcts
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 startTime=time.time()
 
@@ -19,22 +17,27 @@ fname='model-1000stations-era5params-*.txt' # pois: utctime
 # xgb-fit without gridsearchCV
 #fname=sys.argv[1]
 #fname = 'mdl_swi2_2015-2022_10000points-13.txt'
-fname='mdl_swi2_2015-2022_63287points-1.txt'
+#fname='mdl_swi2_2015-2022_63287points-1.txt'
+fname='mdl_swi2_2015-2022_10000points-noRunsums.txt'
 # Predictors in the fitted mdl
-preds=['evap','evap15d',
-'laihv-00','lailv-00',
-'ro','ro15d','rsn-00','sd-00',
-'slhf','sshf','ssr','ssrd',
-'stl1-00','str','swvl2-00','t2-00','td2-00',
-'tp','tp15d',
-'swi2clim',
-'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'clay_0-5cm','clay_15-30cm','clay_5-15cm',
-'sand_0-5cm','sand_15-30cm','sand_5-15cm',
-'silt_0-5cm','silt_15-30cm','silt_5-15cm',
-'soc_0-5cm','soc_15-30cm','soc_5-15cm',
-'dayOfYear'
+preds=['evap',
+       #'evap15d',
+        'laihv-00','lailv-00',
+        'ro',
+        #'ro15d',
+        'rsn-00','sd-00',
+        'slhf','sshf','ssr','ssrd',
+        'stl1-00','str','swvl2-00','t2-00','td2-00',
+        'tp',
+        #'tp15d',
+        'swi2clim',
+        'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
+        'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+        'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+        'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+        'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+        'soc_0-5cm','soc_15-30cm','soc_5-15cm',
+        'dayOfYear'
 ]
 ## F-score
 print("start fscore")
@@ -69,7 +72,7 @@ ax.set_title(fname)
 ax.set_xscale('log')
 plt.tight_layout()
 #f.savefig('Fscore.pdf')
-f.savefig(res_dir+'Fscore_swi2-43000points-1.png', dpi=200)
+f.savefig(res_dir+'Fscore_swi2-10000points-new.png', dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 '''

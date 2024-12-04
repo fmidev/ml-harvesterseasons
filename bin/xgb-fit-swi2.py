@@ -1,8 +1,6 @@
-import os, time, random, warnings,sys
+import time,warnings,sys
 import pandas as pd
-import numpy as np
 import xgboost as xgb
-from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 warnings.filterwarnings("ignore")
 ### XGBoost for swi2 
@@ -43,7 +41,8 @@ cols_own=['utctime','swi2','evap','evap15d',
 'soc_0-5cm','soc_15-30cm','soc_5-15cm',
 'POINT_ID'
 ]
-fname=sys.argv[1] # training data csv filename
+#fname=sys.argv[1] # training data csv filename
+fname='swi2_training_10000lucasPoints_2015-2022_all_soils_swi2clim_ecc.csv.gz'
 print(fname)
 df=pd.read_csv(data_dir+fname,usecols=cols_own)
 
@@ -75,20 +74,24 @@ for y in test_y:
         test_stations=pd.concat([test_stations,df[df['utctime'].dt.year == y]],ignore_index=True)
 
 # split data to predidctors (preds) and variable to be predicted (var)
-preds=['evap','evap15d',
-'laihv-00','lailv-00',
-'ro','ro15d','rsn-00','sd-00',
-'slhf','sshf','ssr','ssrd',
-'stl1-00','str','swvl2-00','t2-00','td2-00',
-'tp','tp15d',
-'swi2clim',
-'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
-'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
-'clay_0-5cm','clay_15-30cm','clay_5-15cm',
-'sand_0-5cm','sand_15-30cm','sand_5-15cm',
-'silt_0-5cm','silt_15-30cm','silt_5-15cm',
-'soc_0-5cm','soc_15-30cm','soc_5-15cm',
-'dayOfYear'
+preds=['evap',
+       #'evap15d',
+        'laihv-00','lailv-00',
+        'ro',
+        #'ro15d',
+        'rsn-00','sd-00',
+        'slhf','sshf','ssr','ssrd',
+        'stl1-00','str','swvl2-00','t2-00','td2-00',
+        'tp',
+        #'tp15d',
+        'swi2clim',
+        'lake_cover','cvh','cvl','lake_depth','land_cover','soiltype','urban_cover','tvh','tvl',
+        'TH_LAT','TH_LONG','DTM_height','DTM_slope','DTM_aspect',
+        'clay_0-5cm','clay_15-30cm','clay_5-15cm',
+        'sand_0-5cm','sand_15-30cm','sand_5-15cm',
+        'silt_0-5cm','silt_15-30cm','silt_5-15cm',
+        'soc_0-5cm','soc_15-30cm','soc_5-15cm',
+        'dayOfYear'
 ]
 var=['swi2']
 preds_train=train_stations[preds] 
@@ -138,7 +141,7 @@ mse=mean_squared_error(var_test,var_pred)
 mae=mean_absolute_error(var_test,var_pred)
 
 # save model 
-xgbr.save_model(mod_dir+'/mdl_swi2_2015-2022_63287points-1.txt')
+xgbr.save_model(mod_dir+'/mdl_swi2_2015-2022_10000points-noRunsums.txt')
 
 print("RMSE: %.5f" % (mse**(1/2.0)))
 print("MAE: %.5f" % (mae))
