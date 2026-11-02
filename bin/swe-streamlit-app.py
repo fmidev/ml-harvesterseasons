@@ -141,7 +141,7 @@ def edition_label(tag,runs):
 # Sidebar: navigation and paths
 # ---------------------------------------------------------------
 st.sidebar.title('❄️ CryoSCOPE ML SWE')
-page=st.sidebar.radio('page',['Overview','Training run','Validation','Validation explorer','SWE predictions'])
+page=st.sidebar.radio('page',['Overview','Training run','Validation','Validation explorer','SWE predictions','Compare SWE models'])
 with st.sidebar.expander('data paths',expanded=False):
     base=st.text_input('snowmodel directory',os.environ.get('SNOWMODEL_DIR','/home/ubuntu/data/cryoscope/snowmodel/'))
     optuna_db=st.text_input('optuna sqlite',os.environ.get('OPTUNA_DB','/home/ubuntu/data/ML/MLexperiments.sqlite3'))
@@ -153,7 +153,8 @@ def read_json(p):
     except Exception: return {}
 
 # validation folders written by the validation script (validationresults_<optuna_tag>/), newest first
-val_dirs=sorted((os.path.basename(p) for p in glob.glob(os.path.join(base,'validationresults*')) if os.path.isdir(p)),
+# only validationresults_<tag>/: the plain validationresults/ folder from before the per-model folders is left out
+val_dirs=sorted((os.path.basename(p) for p in glob.glob(os.path.join(base,'validationresults_*')) if os.path.isdir(p)),
                 key=lambda d:-os.path.getmtime(os.path.join(base,d)))
 def val_dir_tag(d):
     # model tag of a validation folder: optuna_tag in run_info.json, else the folder name after validationresults_
@@ -1328,8 +1329,132 @@ def page_forecasts():
         st.download_button('download scores (csv)',show.to_csv(index=False),file_name=f'swe_metrics_{fc_rel(run_path).replace(os.sep,"_")}.csv',mime='text/csv')
 
 # ---------------------------------------------------------------
+# Page: compare SWE models (raw ECENS, ECXENS of each model edition, HKL side by side for one start date and day)
+# ---------------------------------------------------------------
+def fc_pred_label(lab):
+    if lab in FC_NAMES: return FC_NAMES[lab].replace('ECXENS ','')
+    if lab.startswith('member') and lab[6:].isdigit(): return f'member {int(lab[6:])}'
+    return lab
+
+def fc_date_key(r):
+    return f"{r['base_time']:%Y-%m-%d}" if r['base_time'] is not None else os.path.basename(r['run'].rstrip('/'))
+
+def page_compare():
+    st.title('Compare SWE models')
+    runs=fc_runs(PRED_DIR)
+    if not runs:
+        st.warning(f'no forecast validation results in {PRED_DIR}'); return
+    st.caption('Raw ECENS, the ECXENS forecast of each model edition and HKL (Snowcap) for the same start date, prediction and day. '
+               'Every map uses the same SWE legend and the same area.')
+
+    # ---- start date, models with that start date, prediction shared by all picked models
+    keys=sorted({fc_date_key(r) for r in runs},reverse=True)
+    c1,c2,c3=st.columns([1,3,1])
+    key=c1.selectbox('start date',keys,key='cmpm_date')
+    by_model={}
+    for r in runs:
+        if fc_date_key(r)==key: by_model.setdefault(r['model'],r)
+    models=sorted(by_model,key=lambda m:(m!=FC_DEFAULT_MODEL,m))
+    pick=c2.multiselect('models',models,default=models,format_func=edition_name,key=f'cmpm_models_{key}')
+    if not pick:
+        st.info('pick at least one model'); return
+    common=None
+    for m in pick:
+        labs={os.path.basename(p) for p in by_model[m]['preds']}
+        common=labs if common is None else common&labs
+    if not common:
+        st.warning('the picked models have no prediction in common for this start date'); return
+    labs=sorted(common,key=fc_sort_key)
+    pred=c3.selectbox('prediction',labs,format_func=fc_pred_label,key=f'cmpm_pred_{key}')
+    pdir={m:os.path.join(by_model[m]['run'],pred) for m in pick}
+    if pred in ('driest','wettest'):
+        st.caption(f'{pred} is ranked separately for each model, so the member can differ: '+
+                   ', '.join(f'{edition_name(m)}: {fc_name(pdir[m])}' for m in pick))
+
+    dates=None
+    for m in pick:
+        d={os.path.basename(f)[len('swe_compare_'):-4] for f in glob.glob(os.path.join(pdir[m],'swe_compare_*.png'))}
+        dates=d if dates is None else dates&d
+    dates=sorted(dates or [])
+    if not dates:
+        st.info('no daily maps shared by the picked models'); return
+    bt=by_model[pick[0]]['base_time']
+    lab=lambda t: f"{pd.Timestamp(t):%Y-%m-%d}"+(f" (lead {(pd.Timestamp(t)-bt).days} d)" if bt is not None else '')
+    c1,c2=st.columns([4,1])
+    day=c1.select_slider('day',options=dates,value=dates[0],format_func=lab,key=f'cmpm_day_{key}') if len(dates)>1 else dates[0]
+    ref=pdir[pick[0]]   # raw ECENS and HKL are the same in every model folder, taken from the first model
+
+    # ---- maps: raw ECENS, ECXENS per model, HKL
+    panels=[(os.path.join(ref,f'swe_map_ecens_{day}.png'),'raw ECENS (0.1°)')]
+    panels+=[(os.path.join(pdir[m],f'swe_map_ecxens_{day}.png'),f'ECXENS {edition_name(m)}') for m in pick]
+    panels+=[(os.path.join(ref,f'swe_map_hkl_{day}.png'),'HKL (Snowcap)')]
+    if all(os.path.exists(p) for p,_ in panels):
+        ncol=c2.number_input('maps per row',min_value=2,max_value=8,value=min(len(panels),5),step=1,key='cmpm_ncol')
+        for i in range(0,len(panels),int(ncol)):
+            row=panels[i:i+int(ncol)]
+            for col,(p,cap) in zip(st.columns(int(ncol)),row):
+                with col:
+                    st.markdown(f'**{cap}**'); img(p)
+        if os.path.exists(os.path.join(ref,'swe_legend.png')):
+            st.image(os.path.join(ref,'swe_legend.png'),width=900)
+    else:
+        # runs without single panels: each model's own figures side by side, one column per model
+        st.caption('Each model\'s own figures side by side (raw ECENS | ECXENS | HKL, then ECXENS minus HKL). '
+                   'For one row with a single ECENS and HKL panel, rerun the forecast validation with SAVE_PANELS = True.')
+        for kind in ('swe_compare','swe_bias'):
+            for col,m in zip(st.columns(len(pick)),pick):
+                with col:
+                    st.markdown(f'**{edition_name(m)}**'); img(os.path.join(pdir[m],f'{kind}_{day}.png'))
+
+    # ---- bias maps of the same day
+    with st.expander('bias maps for this day (forecast minus HKL)',expanded=False):
+        bpan=[(os.path.join(ref,f'swe_ecens_bias_{day}.png'),'raw ECENS minus HKL (0.1°)')]
+        bpan+=[(os.path.join(pdir[m],f'swe_bias_{day}.png'),f'ECXENS {edition_name(m)} minus HKL') for m in pick]
+        bpan=[(p,c) for p,c in bpan if os.path.exists(p)]
+        for i in range(0,len(bpan),4):
+            for col,(p,cap) in zip(st.columns(4),bpan[i:i+4]):
+                with col:
+                    st.markdown(f'**{cap}**'); img(p)
+
+    # ---- scores of this day and over all lead days, model against model
+    parts=[]
+    for m in pick:
+        d=read_csv(os.path.join(pdir[m],'swe_metrics.csv'))
+        if d is not None: parts.append(d.assign(model=edition_name(m)))
+    if not parts: return
+    df=pd.concat(parts,ignore_index=True); df['date']=pd.to_datetime(df['date'])
+    ts=pd.Timestamp(day)
+    st.subheader('Scores')
+    cols={'bias':'bias (mm)','mae':'MAE (mm)','rmse':'RMSE (mm)','r':'r','kge':'KGE','csi_1':'CSI 1 mm',
+          'ecx01_rmse':'0.1° RMSE ECXENS (mm)','ecens_rmse':'0.1° RMSE raw ECENS (mm)','skill_mse_vs_ecens':'MSE skill vs ECENS'}
+    dd=df[df['date']==ts]
+    if not dd.empty:
+        st.markdown(f'**{lab(day)}**')
+        table(dd.set_index('model')[[c for c in cols if c in dd]].rename(columns=cols).round(3))
+    c1,c2=st.columns([2,2])
+    met=c1.radio('score',['rmse','bias','mae','kge'],horizontal=True,format_func=lambda m:FC_METRICS[m][0],key='cmpm_met')
+    res=c2.radio('grid',['500 m','0.1°'],horizontal=True,key='cmpm_res',
+                 help='0.1°: ECXENS and raw ECENS against HKL on the same ECENS cells, so raw ECENS can be drawn too')
+    if res=='500 m':
+        long=df[['lead_day','model',met]].rename(columns={met:'v'})
+    else:
+        k=f'ecx01_{met}'
+        if k not in df:
+            st.info('no 0.1° scores in these runs'); return
+        long=df[['lead_day','model',k]].rename(columns={k:'v'})
+        if f'ecens_{met}' in df:
+            e=df[df['model']==df['model'].iloc[0]][['lead_day',f'ecens_{met}']].rename(columns={f'ecens_{met}':'v'}).assign(model='raw ECENS')
+            long=pd.concat([e,long])
+    f=px.line(long,x='lead_day',y='v',color='model',markers=True,height=380,
+              title=f'{FC_METRICS[met][0]} per lead day, {fc_pred_label(pred)} ({res})',
+              labels={'lead_day':'lead day','v':FC_METRICS[met][1] or met,'model':''})
+    if met=='bias': f.add_hline(y=0,line_color='black',line_width=0.6)
+    f.update_traces(selector=dict(name='raw ECENS'),line=dict(dash='dash',color='gray'))
+    chart(f,key='cmpm_lead')
+
+# ---------------------------------------------------------------
 {'Overview':page_overview,'Training run':page_training,'Validation':page_validation,'Validation explorer':page_predictions,
- 'SWE predictions':page_forecasts}[page]()
+ 'SWE predictions':page_forecasts,'Compare SWE models':page_compare}[page]()
 
 # footer on every page: CryoSCOPE contact and funding statement (EU, SERI, MoES)
 if logo('cryoscope.png'):
