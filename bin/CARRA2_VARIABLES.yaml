@@ -1,0 +1,49 @@
+# SmartMet parameter definitions for CARRA2 available variables on sm.cryo-scope.eu
+# fmikey: parameter FMI key on smartmet server
+# name: name of the variable
+# units: available units
+# tsteps: available time steps (in hours) to query
+
+instant:
+  t2_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "T2-K:CARRA2:5097:6:2:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "2 m temperature"
+    units: "K"
+  hsnow_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "HSNOW-M:CARRA2:5096::0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "surface snow thickness"
+    units: "m"
+  sd_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "SD-KGM2:CARRA2:5096:1:0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "water equivalent of snow cover"
+    units: "mm"
+  sde_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "SDE-CM:CARRA2:5096:1:0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "snow depth elevation"
+    units: "cm"
+  skt_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "SKT-K:CARRA2:5097:1:0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "skin temperature"
+    units: "K"
+  snowc_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "SNOWC:CARRA2:5096:1:0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "snow cover"
+    units: "0-1"
+  tsea_carra2:
+    source: sm.cryo-scope.eu
+    fmikey: "TSEA-K:CARRA2:5096:1:0:0"
+    tsteps: [0, 6, 12, 18]
+    name:  "sea temperature"
+    units: "K"

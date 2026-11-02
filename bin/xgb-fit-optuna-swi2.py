@@ -18,34 +18,6 @@ optuna_dir='/home/ubuntu/data/ML/' # optuna storage
 os.chdir(optuna_dir)
 print(os.getcwd())
 
-### optuna objective & xgboost
-def objective(trial):
-    # hyperparameters
-    param = {
-        "objective":"reg:squarederror",
-        "num_parallel_tree":trial.suggest_int("number_parallel_tree", 1, 10),
-        "max_depth":trial.suggest_int("max_depth",3,18),
-        "subsample":trial.suggest_float("subsample",0.01,1),
-        "learning_rate":trial.suggest_float("learning_rate",0.01,0.7),
-        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.01, 1.0),
-        "n_estimators":trial.suggest_int("n_estimators",50,1000),
-        "alpha":trial.suggest_float("alpha", 0.000000001, 1.0),
-        "n_jobs":64,
-        "random_state":99,
-        "early_stopping_rounds":50,
-        "eval_metric":"rmse"
-    }
-    eval_set=[(valid_x,valid_y)]
-
-    xgbr=xgb.XGBRegressor(**param)
-    bst = xgbr.fit(train_x,train_y,eval_set=eval_set)
-    preds = bst.predict(valid_x)
-    pred_labels = np.rint(preds)
-    accuracy = np.sqrt(mean_squared_error(valid_y,preds))
-    print("accuracy: "+str(accuracy))
-    return accuracy
-
-
 ### Read in training data, split to preds and vars
 cols_own=['utctime','swi2','evap','evap15d',
 'laihv-00','lailv-00',

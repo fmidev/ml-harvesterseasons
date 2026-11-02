@@ -1,28 +1,50 @@
 import xgboost as xgb
-import glob, sklearn, time
+import time
+#import glob, sklearn
 #import shap
-import functions as fcts
+#import functions as fcts
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+#import seaborn as sns
 
 startTime=time.time()
 
-mdls_dir='/home/ubuntu/data/ML/models/precipitation-harmonia/'
-res_dir='/home/ubuntu/data/ML/results/precipitation-harmonia/figures/'
-
+#mdls_dir='/home/ubuntu/data/ML/models/precipitation-harmonia/'
+#res_dir='/home/ubuntu/data/ML/results/precipitation-harmonia/figures/'
+mdls_dir='/home/ubuntu/data/ML/models/RR/'
+res_dir='/home/ubuntu/data/ML/results/RR/'
 # K-Fold fitted models
 '''
 fname='model-1000stations-era5params-*.txt' # pois: utctime
 '''
 # xgb-fit without gridsearchCV
-#fname='mdl_RR_5441sta_2000-2020-1.txt'
-#fname='mdl_RR_5441sta_2000-2020-2.txt'
-fname='mdl_RRweight_2000-2020-5.txt'
-figname='Fscore_RRweight_5441sta_2000-2020-5.png'
+#fname='RR_eobs+era5_XGB_2000-2020_4707-1'
+#fname='RR_eobs+era5_XGB_2000-2020_5441_qe'
+fname='RR_eobs+era5_XGB_2000-2020_5441_sqe'
+mdl=mdls_dir+fname+'.json'
+figname=res_dir+'Fscore_'+fname+'.png'
+#fname='mdl_RRweight_2000-2020-5.txt'
+#figname=res_dir+'Fscore_RRweight_5441sta_2000-2020-5.png'
 # Predictors in the fitted mdl
-preds=[
+'''preds=[ # 4707 stations
+    'LAT','LON',
+    #'HGHT',
+    'anor','e','ewss','fg10','kx-00','kx-12',
+    'latitude','lsm','mn2t','msl-00','msl-12',
+    'mx2t','nsss','q500-00','q500-12','q700-00',
+    'q700-12','q850-00','sdor','slhf','slor','ssr',
+    'ssrd','sshf','str','strd','swvl1','swvl2',
+    'swvl3','swvl4','t2-00','t2-12','t500-00',
+    't500-12','t700-00','t700-12','t850-00','t850-12',
+    'tcc-00','tcc-12','tclw','tcwv','tp','td2-00','td2-12','ttr',
+    'u10-00','u10-12','v10-00','v10-12','u500-00','u500-12',
+    'u700-00','u700-12','u850-00','u850-12','v500-00','v500-12',
+    'v700-00','v700-12','v850-00','v850-12','z','z500-00','z500-12',
+    'z700-00','z700-12','z850-00','z850-12','dayOfYear','Dmsl-00','Dmsl-12'
+]
+'''
+preds=[ # 5441 stations
     'latitude','longitude',
     #'HGHT','SLOPE','ASPECT','TPI','TRI','DTW','DTR','DTL','DTO','FCH',
     'anor','evap','kx-00','lsm','mn2t-00','msl-00','mx2t-00',
@@ -39,7 +61,7 @@ preds=[
 print(len(preds))
 ## F-score
 print("start fscore")
-mdl=mdls_dir+fname
+#mdl=mdls_dir+fname
 models=[]
 fitted_mdl=xgb.XGBRegressor()
 fitted_mdl.load_model(mdl)
@@ -70,7 +92,7 @@ ax.set_title(fname)
 ax.set_xscale('log')
 plt.tight_layout()
 #f.savefig('Fscore.pdf')
-f.savefig(res_dir+figname, dpi=200)
+f.savefig(figname, dpi=200)
 #plt.show()
 plt.clf(); plt.close('all')
 '''

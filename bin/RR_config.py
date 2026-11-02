@@ -1,15 +1,28 @@
 ### Precipitation configuration file for XGBoost fitting
 ### xgb-fit-RR.py
 data_dir='/home/ubuntu/data/ML/training-data/RR/' # training data path
-fname=data_dir+'RR_eobs+era5_training_4582points_2000-2020.csv.gz' # training data file
+fname=data_dir+'RR_eobs+era5_training_4707points_2000-2020.csv.gz' # training data file
+#fname=data_dir+'RR_training_5441stations_2000-2020_all.csv.gz' 
 mod_dir='/home/ubuntu/data/ML/models/RR/' # saved XGBoost models
-name='RR_eobs+era5_XGB_2000-2020_4582-1'
+name='RR_eobs+era5_XGB_2000-2020_4707_sqe'
 mod_name=mod_dir+name+'.json' # model name
 res_dir='/home/ubuntu/data/ML/results/RR/' # figures etc
 logfile=res_dir+name+'.log' # log file
 predictand1='RR'
 predictand2='WeightRR'
-cols_own=[
+'''cols_own=[ # 5441 stations
+    'RR','utctime','latitude','longitude','pointID',
+    'anor','evap','kx-00','lsm','mn2t-00','msl-00','mx2t-00',
+    'q500-00','q700-00','q850-00','ro','rsn-00','sd-00','sdor',
+    'sf',#'skt-00',
+    'slhf','slor','sshf','ssr','ssrd','strd',#'sst-00',
+    't2m-00','t500-00','t700-00','t850-00','tcc-00','td2m-00','tp',
+    'tsr','ttr','u10-00','u500-00','u700-00','u850-00','v10-00',
+    'v500-00',#'v700-00',
+    'v850-00','z',#'z500-00',
+    'z700-00','z850-00'
+]'''
+cols_own=[ # 4707 stations
     'STAID','DATE','RR','LAT','LON',
     #'HGHT',
     'anor','e','ewss','fg10','kx-00','kx-12',
@@ -33,5 +46,6 @@ lrte=0.044
 max_depth=9
 subsample=0.96
 colsample_bytree=0.37
-num_parallel_tree=2
+num_parallel_tree=1
 al=0.72
+qa=0.95

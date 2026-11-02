@@ -1,0 +1,1289 @@
+# SmartMet parameter definitions for ERA5 available variables 
+# smartmet: parameter FMI key on smartmet server
+# name: name of the variable
+# units: available units
+# tsteps: available time steps (in hours) to query
+# unified ml names drop producer from these
+# unit conversions (to target prediction type - ec-ens etc)
+# areas = europe, india-himalayas, etc 
+
+instant:
+  10u_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: U10-MS:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: U10-MS:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: U10-MS:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "10m u wind component"
+    units: "m/s"
+  10v_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: V10-MS:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: V10-MS:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: V10-MS:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "10m v wind component"
+    units: "m/s"
+  td2_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TD2-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: TD2-K:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: TD2-K:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "2m dewpoint temperature"
+    units: "K"
+  t2_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: T2-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: T2-K:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: T2-K:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "2m temperature"
+    units: "K"
+  msl_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: PSEA-HPA:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: PSEA-HPA:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: PSEA-HPA:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Pressure reduced to mean sea level"
+    units: "Pa"
+  sst_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TSEA-K:ERA5:5101:1:0:1
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: TSEA-K:ERA5:5021:1:0:1
+      tsteps: [0, 12]
+    name: "Sea temperature in Kelvins"
+    units: "K"
+  sp_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: PGR-PA:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Surface pressure"
+    units: "Pa"
+  istl1_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISTL1-K:ERA5:5101:9:7:1:0
+      tsteps: [0, 12]
+    name: "Ice temperature layer 1"
+    units: "K"
+  istl2_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISTL2-K:ERA5:5101:9:1820:1:0
+      tsteps: [0, 12]
+    name: "Ice temperature layer 2"
+    units: "K"
+  istl3_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISTL3-K:ERA5:5101:9:7268:1:0
+      tsteps: [0, 12]
+    name: "Ice temperature layer 3"
+    units: "K"
+  istl4_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISTL4-K:ERA5:5101:9:25855:1:0
+      tsteps: [0, 12]
+    name: "Ice temperature layer 4"
+    units: "K"
+  skt_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SKT-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: SKT-K:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Skin temperature"
+    units: "K"
+  100u_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: U100-MS:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "100 metre U wind component"
+    units: "m/s"
+  100v_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: V100-MS:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "100 metre V wind component"
+    units: "m/s"
+  u10n_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: U10N-MS:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "10 metre u-component of neutral wind"
+    units: "m/s"
+  v10n_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: V10N-MS:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "10 metre v-component of neutral wind"
+    units: "m/s"
+  i10fg_era5:
+    eu: #19954-2025
+      source: ml.harvesterseasons.com
+      fmikey: I10FG-MS:ERA5:5101:1:0:1:0
+      tsteps: [00, 12]
+    name: "	Instantaneous 10 metre wind gust"
+    units: "m/s"
+  ishf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISHF-WM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Instantaneous surface sensible heat net flux"
+    units: "W/m^2"
+  alnid_era5:
+    eu: #1995-2025 
+      source: ml.harvesterseasons.com
+      fmikey: ALNID-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Near IR albedo for diffuse radiation (climatological)"
+    units: "0-1"
+  alnip_era5:
+    eu: #1995-2025 climatological
+      source: ml.harvesterseasons.com
+      fmikey: ALNIP-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Near IR albedo for direct radiation (climatological)"
+    units: "0-1"
+  aluvd_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ALUVD-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "UV visible albedo for diffuse radiation (climatological)"
+    units: "0-1"
+  aluvp_era5:
+    eu: #1995-2025 climatological
+      source: ml.harvesterseasons.com
+      fmikey: ALUVP-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "UV visible albedo for direct radiation (climatological)"
+    units: "0-1"
+  cbh_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CBH-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Cloud base height"
+    units: "m"
+  hcc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: NH-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "High cloud cover"
+    units: "0-1"
+  lcc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: NL-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Low cloud cover"
+    units: "0-1"
+  mcc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: NM-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Medium cloud cover"
+    units: "0-1"
+  tcc_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: N-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: N-0TO1:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total cloud cover"
+    units: "0-1"
+  tciw_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TCIW-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column cloud ice water"
+    units: "kg/m^2"
+  tclw_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TCLW-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: TCLW-KGM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column liquid water"
+    units: "kg/m^2"
+  lblt_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LBLT-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake bottom temperature"
+    units: "K"
+  cl_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CL-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake cover"
+    units: "0-1"
+  dl_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: DL-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake total depth"
+    units: "m"
+  licd_era5:  
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LICD-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake ice total depth"
+    units: "m"
+  lict_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LICT-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake ice surface temperature"
+    units: "K"
+  lmld_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LMLD-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake mix-layer depth"
+    units: "m"
+  lmlt_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LMLT-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake mix-layer temperature"
+    units: "K"
+  lshf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LSHF:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake shape factor"
+    units: "dimensionless"
+  ltlt_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LTLT-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Lake total layer temperature"
+    units: "K"
+  crr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CRR-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective rain rate"
+    units: "kg/m^2/s"
+  ilspf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ILSPF-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Instantaneous large-scale precipitation fraction"
+    units: "Proportion"
+  lsrr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LSRR-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Large-scale rain rate"
+    units: "kg/m^2/s"
+  ptype_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: PRECFORM-N:ERA5:5101:1:0:0
+      tsteps: [0, 12]
+    name: "Precipitation form"
+    units: "Numeric"
+  tcrw_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TCRW-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column rain water"
+    units: "kg/m^2"
+  csfr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CSFR-KGM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective snowfall rate water equivalent"
+    units: "kg/m^2/s"
+  lssfr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LSSFR-KGM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Large-scale snowfall rate water equivalent"
+    units: "kg/m^2/s"
+  asn_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ASN-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Snow albedo"
+    units: "0-1"
+  rsn_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SND-KGM3:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: RSN-KGM3:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SND-KGM3:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Snow density"
+    units: "kg/m^3"
+  sd_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: HSNOW-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SD-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SD-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Snow depth"
+    units: "m of water equivalent"
+  tsn_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TSN-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Tenperature of snow layer"
+    units: "K"
+  tcsw_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TCSW-K:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2025-2026
+      fmikey: TCSNOWWAT-KGM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: TCSNOWWAT-KGM2:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Total column snow water"
+    units: "Kg/m^2"
+  tcslw_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TCSLW-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column supercooled liquid water"
+    units: "Kg/m^2"
+  stl1_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: STL1-K:ERA5:5101:9:7:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: STL1-K:ERA5:5021:9:7:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: STL1-K:ERA5:5080:9:7:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Soil temperature layer 1 in Kelvins"
+    units: "K"
+  stl2_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TSOIL-K:ERA5:5101:9:1820:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: TSOIL-K:ERA5:5021:9:1820:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: TSOIL-K:ERA5:5080:9:1820:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Soil temperature in Kelvins"
+    units: "K"
+  stl3_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: STL3-K:ERA5:5101:9:7268:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: STL3-K:ERA5:5021:9:7268:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: STL3-K:ERA5:5080:9:7268:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Soil temperature layer 3 in Kelvins"
+    units: "K"
+  stl4_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: STL4-K:ERA5:5101:9:25855:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: STL4-K:ERA5:5021:9:25855:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: STL4-K:ERA5:5080:9:25855:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Soil temperature layer 4 in Kelvins"
+    units: "K"
+  slt_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SLT-K:ERA5:5101:9:25855:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SOILTY-N:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SOILTY-N:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Soil type"
+    units: "Numeric"
+  swvl1_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SOILWET-M3M3:ERA5:5101:9:7:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SOILWET-M3M3:ERA5:5021:9:7:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SOILWET-M3M3:ERA5:5080:9:7:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Volumetric soil water layer 1"
+    units: "m^3/m^3"
+  swvl2_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SWVL2-M3M3:ERA5:5101:9:1820:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SWVL2-M3M3:ERA5:5021:9:1820:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SWVL2-M3M3:ERA5:5080:9:1820:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,22, 23]
+    name: "Volumetric soil water layer 2"
+    units: "m^3/m^3"
+  swvl3_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SWVL3-M3M3:ERA5:5101:9:7268:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SWVL3-M3M3:ERA5:5021:9:7268:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SWVL3-M3M3:ERA5:5080:9:7268:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,22, 23]
+    name: "Volumetric soil water layer 3"
+    units: "m^3/m^3"
+  swvl4_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SWVL4-M3M3:ERA5:5101:9:25855:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: SWVL4-M3M3:ERA5:5021:9:25855:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SWVL4-M3M3:ERA5:5080:9:25855:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+    name: "Volumetric soil water layer 4"
+    units: "m^3/m^3"
+  cvh_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: CVH-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: CVH-N:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: CVH-N:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "High vegetation cover"
+    units: "0-1"
+  lai_hv_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: LAI_HV-M2M2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: LAI_HV-M2M2:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: LAI_HV-M2M2:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Leaf area index, high vegetation"
+    units: "m^2/m^2"
+  lai_lv_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: LAI_LV-M2M2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: LAI_LV-M2M2:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: LAI_LV-M2M2:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Leaf area index, low vegetation"
+    units: "m^2/m^2"
+  cvl_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: CVL-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: CVL-N:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Low vegetation cover"
+    units: "0-1"
+  tvh_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TVH-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: TVH-N:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: TVH-N:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Type of high vegetation"
+    units: "Numeric"
+  tvl_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TVL-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: TVL-N:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: TVL-N:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Type of low vegetation"
+    units: "Numeric"
+  anor_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: ANOR-RAD:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: ANOR-RAD:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Angle of sub-gridscale orography"
+    units: "Radians"
+  isor_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ISOR:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "	Anisotropy of sub-gridscale orography"
+    units: "Numeric"
+  bfi_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: BFI-N:ERA5:5102:7:0:1:0
+      tsteps: [0, 12]
+    name: "Benjamin-Feir index"
+    units: "dimensionless"
+  blh_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: MIXHGT-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Boundary layer height"
+    units: "m"
+  chnk_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CRNK-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Charnock"
+    units: "Numeric"
+  cape_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CAPE-JKG:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective available potential energy"
+    units: "J/kg"
+  cin_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CIN-JKG:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective inhibition"
+    units: "J/kg"
+  dctb_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: DCTB-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Duct base height"
+    units: "m"
+  fal_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ALBEDOSLR-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "forecast albedo"
+    units: "0-1"
+  fsr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: FSR-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Forecast surface roughness"
+    units: "m"
+  flsr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: FLSR-N:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Forecast logarithm of surface roughness for heat"
+    units: "Numeric"
+  zust_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ZUST-MS:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Friction velocity"
+    units: "m/s"
+  z_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: Z-M2S2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2000-2024
+      fmikey: Z-M2S2:ERA5:5021:1:0:1:0
+      tsteps: [0,12]
+    name: "Geopotential"
+    units: "m^2/s^2"
+  iews_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: IEWS-NM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "	Instantaneous eastward turbulent surface stress"
+    units: "N/m^2"
+  ie_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: IE-KGM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Instantaneous moisture flux"
+    units: "kg/m^2/s"
+  inss_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: INSS-NM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Instantaneous northward turbulent surface stress"
+    units: "N/m^2"
+  kx_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: KX:ERA5:5101:1:0:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: KX:ERA5:5021:1:0:0
+      tsteps: [0, 12]
+    name: "K index"
+    units: "K"
+  lsm_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: LC-0TO1:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: LC-0TO1:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Land-sea mask"
+    units: "0-1"
+  dndza_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: DNDZA-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Mean vertical gradient of refractivity inside trapping layer"
+    units: "m^-1"
+  dndzn_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: DNDZN-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Minimum vertical gradient of refractivity inside trapping layer"
+    units: "m^-1"
+  ci_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: IC-0TO1:ERA5:5101:1:0:1
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: IC-0TO1:ERA5:5021:1:0:1
+      tsteps: [0, 12]
+    name: "Ice cover"
+    units: "0-1" 
+  src_era5:
+    eu: #1995-2025
+      source: ml.hervesterseasons.com
+      fmikey: SRC-MS:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Skin reservoir content"
+    units: "m of water equivalent"
+  slor_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SLOR:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: SLOR:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Slope of sub-gridscale orography"
+    units: "Numeric"
+  sdfor_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: SDFOR-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Standard deviation of filtered subgrid orography (climatological)"
+    units: "m"
+  sdor_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SDOR-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: SDOR-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Standard deviation of sub-gridscale orography"
+    units: "m"
+  tco3_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TOZONE-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column ozone"
+    units: "kg/m^2"
+  tcw_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TCW-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column water"
+    units: "kg/m^2"
+  tcwv_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: TOTCWV-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: TOTCWV-KGM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 12]
+    name: "Total column water vapour"
+    units: "kg/m^2"
+  totalx_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TOTALX-K:ERA5:5101:1:0:0
+      tsteps: [0, 12]
+    name: "Total totals index"
+    units: "K"
+  tplb_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TPLB-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Trapping layer base height"
+    units: "m"
+  tplt_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TPLT-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Trapping layer top height"
+    units: "m"
+  ust_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: UST-MS:ERA5:5102:7:0:1:0
+      tsteps: [0, 12]
+    name: "U-component surface stokes drift"
+    units: "m/s"
+  vst_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: VST-MS:ERA5:5102:7:0:1:0
+      tsteps: [0, 12]
+    name: "V-component surface stokes drift"
+    units: "m/s"
+  deg0l_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: DEG0L-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Geometric height of 0 degrees C atmospheric isothermal level above ground"
+    units: "m"
+
+accumulated:
+  bld_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: BLD-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Boundary layer dissipation"
+    units: "J/m^2"
+  cdir_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CDIR-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Surface direct short-wave radiation, clear sky"
+    units: "J/m^2"
+  cp_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CP-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective precipitation"
+    units: "m"
+  csf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: CSF-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Convective snowfall"
+    units: "m of water equivalent"
+  es_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: ES-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Snow evaporation"
+    units: "m of water equivalent"
+  e_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: EVAP-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2026
+      fmikey: EVAP-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: EVAP-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Evaporation"
+    units: "m of water equivalent"
+  pev_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: EVAPP-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2025-2026
+      fmikey: EVAPP-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2,3,4,5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: EVAPP-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Potential evaporation"
+    units: "m"
+  ewss_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: EWSS-NM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: EWSS-NM2S:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Time-integrated eastward turbulent surface stress"
+    units: "Ns/m^2"
+  fdir_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: FDIR-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Surface direct short-wave (solar) radiation"
+    units: "J/m^2"
+  slhf_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: FLLAT-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: FLLAT-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Latent heat flux"
+    units: "J/m^2"
+  sshf_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: FLSEN-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: FLSEN-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Sensible heat flux"
+    units: "J/m^2"
+  gwd_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: GWD-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Gravity wave dissipation"
+    units: "J/m^2"
+  lgws_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LGWS-NM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Eastward gravity wave surface stress"
+    units: "Ns/m^2"
+  lsf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LSF-M:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Large-scale snowfall"
+    units: "m of water equivalent"
+  lspf_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: LSPF-S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Large-scale precipitation fraction"
+    units: "s"
+  mgws_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: MGWS-NM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+    name: "Northward gravity wave surface stress"
+    units: "Ns/m^2"
+  nsss_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: NSSS-NM2S:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: NSSS-NM2S:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Time-integrated northward turbulent surface stress"
+    units: "Ns/m^2"
+  ssrd_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RADGLOA-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: RADGLOA-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Global radiation accumulation"
+    units: "J/m^2"
+  strd_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RADLWA-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: RADLWA-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Long-wave radiation accumulation"
+    units: "J/m^2"
+  str_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RNETLWA-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: RNETLWA-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Net long wave radiation accumulation"
+    units: "J/m^2"
+  ssr_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RNETSWA-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0, 12]
+      source: smartmet.xyz #2000-2024
+      fmikey: RNETSWA-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Net short wave radiation accumulation"
+    units: "J/m^2"
+  ro_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RO-M:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2025-2026
+      fmikey: RO-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: RO-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Runoff"
+    units: "m"
+  uvb_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: UVB-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Surface downward UV radiation"
+    units: "J/m^2"
+  tsrc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TSRC-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Top net short-wave (solar) radiation, clear sky"
+    units: "J/m^2" 
+  tsr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TSR-J:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Top net solar radiation"
+    units: "J/m^2"
+  tisr_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: TISR-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "TOA incident short-wave (solar) radiation"
+    units: "J/m^2"
+  strdc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: STRDC-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Surface long-wave (thermal) radiation downward clear-sky"
+    units: "J/m^2"
+  strc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: STRC-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Surface net long-wave (thermal) radiation, clear sky"
+    units: "J/m^2"
+  ssro_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SSRO-M:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2025-2026
+      fmikey: SSRO-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SSRO-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Sub-surface runoff"
+    units: "m"
+  ssrdc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: SSRDC-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Surface short-wave (solar) radiation downward clear-sky"
+    units: "J/m^2"
+  ssrc_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: SSRC-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Surface net short-wave (solar) radiation, clear sky"
+    units: "J/m^2"
+  sro_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SRO-M:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2025-2026
+      fmikey: SRO-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SRO-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Surface runoff"
+    units: "m"
+  sf_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: SNACC-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2025-2026
+      fmikey: SNACC-KGM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: SNACC-KGM2:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Snowfall"
+    units: "m of water equivalent"
+  smlt_era5:
+    eu: #1995-2025
+      source: ml.harvesterseasons.com
+      fmikey: SMLT-M:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+    name: "Snowmelt"
+    units: "m of water equivalent"
+  ttr_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RTOPLWA-JM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2000-2024
+      fmikey: RTOPLWA-JM2:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    name: "Top net long-wave (thermal) radiation"
+    units: "J/m^2"
+  lsp_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RRL-KGM2:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2025
+      fmikey: RRL-KGM2:ERA5:5081:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Large-scale precipitation"
+    units: "m"
+  tp_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1995-2025
+      fmikey: RR-M:ERA5:5101:1:0:1:0
+      tsteps: [0,12]
+      source: smartmet.xyz #2000-2026
+      fmikey: RR-M:ERA5:5021:1:0:1:0
+      tsteps: [0, 3, 6, 9, 12, 15, 18, 21]
+    in: #2025-2026
+      source: sm.cryo-scope.eu
+      fmikey: RR-M:ERA5:5080:1:0:1:0
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name: "Total precipitation"
+    units: "m"
+
+max:
+  10fg_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1994-2025
+      fmikey: FFG-MS:ERA5:5101:1:0:1:0
+      tsteps: [11, 23]
+      source: smartmet.xyz #2000-2024
+      fmikey: FFG-MS:ERA5:5021:1:0:1:0
+      tsteps: [2, 5, 8, 11, 14, 17, 20, 23]
+    name: "Instantaneous wind speed"
+    units: "m/s"
+  mntpr_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: MNTPR-KGM2S:ERA5:5101:1:0:1:0
+      tsteps: [11, 23]
+    name: "Minimum total precipitation rate since previous post-processing"
+    units: "kg/m^2/s"
+  mxtpr_era5:
+    eu: #1994-2025
+      source: ml.harvesterseasons.com
+      fmikey: MXTPR-KGM2S:ERA5:5101:1:0:1:0
+      tsteps: [11, 23]
+    name: "Maximum total precipitation rate since previous post-processing"
+    units: "kg/m^2/s"
+  mn2t_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1994-2025
+      fmikey: TMIN-K:ERA5:5101:1:0:1:0
+      tsteps: [11, 23]
+      source: smartmet.xyz #1999-2024
+      fmikey: TMIN-K:ERA5:5021:1:0:1:0
+      tsteps: [2, 5, 8, 11, 14, 17, 20, 23]
+    name: "Minimum temperature at 2 metres since previous post-processing"
+    units: "K"
+  mx2t_era5:
+    eu: 
+      source: ml.harvesterseasons.com #1994-2025
+      fmikey: TMAX-K:ERA5:5101:1:0:1:0
+      tsteps: [11, 23]
+      source: smartmet.xyz #1999-2024
+      fmikey: TMAX-K:ERA5:5021:1:0:1:0
+      tsteps: [2, 5, 8, 11, 14, 17, 20, 23]
+    name: "Maximum temperature at 2 metres since previous post-processing"
+    units: "K"

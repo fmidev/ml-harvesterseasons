@@ -28,23 +28,52 @@ def plot_corr_image(df,p,name1,name2):
     plt.savefig(name1,dpi=1000)
 
     # bar plot
-    x=np.array(ccvalues)
-    bigvals=np.where(x>=0.25)[0]
-    smallvals=np.where(x<=-0.25)[0]
-    fig = plt.figure(figsize = (10, 10))
-    plt.grid(zorder=0)
-    plt.bar(vars, ccvalues, color ='maroon',
-            width = 0.4,zorder=3)
+    create_correlation_plot(p, ccvalues, name2)
+
+def create_correlation_plot(vars, ccvalues, name2):
+    """Create correlation plot with optimized settings and save in multiple formats"""
+    # Pre-calculate threshold values
+    x = np.array(ccvalues)
+    bigvals = np.where(x >= 0.25)[0]
+    smallvals = np.where(x <= -0.25)[0]
+    
+    # Setup plot with optimized settings
+    plt.style.use('fast')
+    fig = plt.figure(figsize=(20, 10), dpi=100)
+    ax = fig.add_subplot(111)
+    
+    # Plot with single call
+    ax.grid(True, zorder=0)
+    ax.bar(vars, ccvalues, color='maroon', width=0.4, zorder=3)
+    
+    # Optimize text rendering
+#   ax.set_xticks(vars)
+#    labels = ax.set_xticklabels(vars, rotation=90, fontsize=7)
+    
     plt.xticks(vars, rotation=90,fontsize=7)
     for i in bigvals:
         plt.gca().get_xticklabels()[i].set_color('red') 
     for i in smallvals:
-        plt.gca().get_xticklabels()[i].set_color('blue')     
-    plt.ylim(-1.0,1.0)
-    plt.xlabel("parameters")
-    plt.ylabel("corr.")
-    plt.title("correlation with swi2")
-    plt.savefig(name2,dpi=1000)
+        plt.gca().get_xticklabels()[i].set_color('blue')      
+    # Set properties
+    ax.set_ylim(-1.0, 1.0)
+    ax.set_xlabel("parameters")
+    ax.set_ylabel("corr.")
+    ax.set_title("Correlation with swi2")
+    
+    # Save in multiple formats
+    base_name = name2.rsplit('.', 1)[0]  # Remove extension
+    
+    # Save PNG (for web/preview)
+    plt.savefig(f"{base_name}.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
+    
+    # Save SVG (vector format)
+    plt.savefig(f"{base_name}.svg", format='svg', bbox_inches='tight', pad_inches=0.1)
+    
+    # Save PDF (vector format)
+    plt.savefig(f"{base_name}.pdf", format='pdf', bbox_inches='tight', pad_inches=0.1)
+    
+    plt.close(fig)
 
 data_dir='/home/ubuntu/data/ML/training-data/soilwater/' # training data
 res_dir='/home/ubuntu/data/ML/results/soilwater/figures/' # result figures
@@ -97,7 +126,7 @@ print(len(vars))
 df=df[vars]
 print(df)
 
-name1=res_dir+'10000points_cross-correlation_matrix_ALLpreds.png'
-name2=res_dir+'10000points_cross-correlation_bar_ALLpreds.png'
+name1=res_dir+'10000points_cross-correlation_matrix_ALLpreds_vFinal.png'
+name2=res_dir+'10000points_cross-correlation_bar_ALLpreds_vFinal.png'
 
 plot_corr_image(df,vars,name1,name2)

@@ -10,8 +10,17 @@ import matplotlib.pyplot as plt
 nuts='/home/ubuntu/data/ML/NUTS_RG_20M_2021_4326.json'
 data_dir='/home/ubuntu/data/ML/training-data/RR/'
 eobsinfo=data_dir+'eobs/eobsStaidInfo.csv'
+subset=data_dir+'stationIDs_4707.txt'
 #eobsinfo=data_dir+'eobs/eobsStaidInfo_reduced.csv'
-eobs_df=pd.read_csv(eobsinfo)
+eobs_df_all=pd.read_csv(eobsinfo)
+
+# plot subset
+print(eobs_df_all)
+with open(subset, "r") as file:
+    lines = file.read().splitlines()
+ids = [int(line) for line in lines]
+eobs_df = eobs_df_all[eobs_df_all['STAID'].isin(ids)]
+print(eobs_df)
 
 countries = gpd.read_file(nuts)
 

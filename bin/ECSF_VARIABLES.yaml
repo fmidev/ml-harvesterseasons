@@ -1,0 +1,552 @@
+# SmartMet parameter definitions for ECSF available variables on sm.cryo-scope.eu and smartmet.xyz
+# fmikey: parameter FMI key (for different levels, pl = pressure level in hPa, sl = soil layer in cm) on smartmet server
+# name: name of the variable
+# units: available units
+# tsteps: available time steps (in hours) to query
+# areas: eu = europe, in = india-himalayas, etc.
+
+instant:
+  wdir_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "DD-D:ECSF:5094:2:500:1:0"
+        pl-700: "DD-D:ECSF:5094:2:700:1:0"
+        pl-850: "DD-D:ECSF:5094:2:850:1:0"
+        pl-925: "DD-D:ECSF:5094:2:925:1:0"
+    eu: 
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "DD-D:ECSF:5103:2:500:1:0"
+        pl-700: "DD-D:ECSF:5103:2:700:1:0"
+        pl-850: "DD-D:ECSF:5103:2:850:1:0"
+        pl-925: "DD-D:ECSF:5103:2:925:1:0"
+    name:  "wind direction"
+    units: "deg"
+  ws_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "FF-MS:ECSF:5094:2:500:1:0"
+        pl-700: "FF-MS:ECSF:5094:2:700:1:0"
+        pl-850: "FF-MS:ECSF:5094:2:850:1:0"
+        pl-925: "FF-MS:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "FF-MS:ECSF:5103:2:500:1:0"
+        pl-700: "FF-MS:ECSF:5103:2:700:1:0"
+        pl-850: "FF-MS:ECSF:5103:2:850:1:0"
+        pl-925: "FF-MS:ECSF:5103:2:925:1:0"
+    name:  "wind speed"
+    units: "m/s"
+  fg10_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "FFG-MS:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "FFG-MS:ECSF:5103:1:0:1:0"
+    name:  "instantaneous wind speed"
+    units: "m/s"
+  sde_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "HSNOW-M:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "HSNOW-M:ECSF:5103:1:0:1:0"
+    name:  "surface snow thickness"
+    units: "m"
+  ci_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "IC-0TO1:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "IC-0TO1:ECSF:5103:1:0:1:0"
+    name:  "ice cover"
+    units: "0-1"
+  kx_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikey: "KX:ECSF:5094:2:850:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikey: "KX:ECSF:5103:2:850:1:0"
+    name:  "K index"
+    units: ""
+  tcc_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "N-0TO1:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "N-0TO1:ECSF:5103:1:0:1:0"
+    name:  "cloudiness"
+    units: "0-1"
+  msl_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "PSEA-HPA:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "PSEA-HPA:ECSF:5103:1:0:1:0"
+    name:  "pressure reduced to mean sea level"
+    units: "hPa"
+  qv_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "Q-KGKG:ECSF:5094:2:500:1:0"
+        pl-700: "Q-KGKG:ECSF:5094:2:700:1:0"
+        pl-850: "Q-KGKG:ECSF:5094:2:850:1:0"
+        pl-925: "Q-KGKG:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikeys: 
+        pl-500: "Q-KGKG:ECSF:5103:2:500:1:0"
+        pl-700: "Q-KGKG:ECSF:5103:2:700:1:0"
+        pl-850: "Q-KGKG:ECSF:5103:2:850:1:0"
+        pl-925: "Q-KGKG:ECSF:5103:2:925:1:0"
+    name:  "specific humidity"
+    units: "kg/kg"
+  sd_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "SD-M:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "SD-M:ECSF:5103:1:0:1:0"
+    name:  "snow depth"
+    units: "m"
+  rsn_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "SND-KGM3:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "SND-KGM3:ECSF:5103:1:0:1:0"
+    name:  "snow density"
+    units: "kg/m^3"
+  stl1_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "STL1-K:ECSF:5094:9:7:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "STL1-K:ECSF:5103:9:7:1:0"
+    name:  "soil temperature level 1"
+    units: "K"
+  t_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "T-K:ECSF:5094:2:500:1:0"
+        pl-700: "T-K:ECSF:5094:2:700:1:0"
+        pl-850: "T-K:ECSF:5094:2:850:1:0"
+        pl-925: "T-K:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "T-K:ECSF:5103:2:500:1:0"
+        pl-700: "T-K:ECSF:5103:2:700:1:0"
+        pl-850: "T-K:ECSF:5103:2:850:1:0"
+        pl-925: "T-K:ECSF:5103:2:925:1:0"
+    name:  "temperature"
+    units: "K"
+  t2_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "T2-K:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "T2-K:ECSF:5103:1:0:1:0"
+    name:  "2 metre temperature"
+    units: "K"
+  tclw_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TCLW-KGM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TCLW-KGM2:ECSF:5103:1:0:1:0"
+    name:  "total column liquid water"
+    units: "kg/m^2"
+  td_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "TD-K:ECSF:5094:2:500:1:0"
+        pl-700: "TD-K:ECSF:5094:2:700:1:0"
+        pl-850: "TD-K:ECSF:5094:2:850:1:0"
+        pl-925: "TD-K:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "TD-K:ECSF:5103:2:500:1:0"
+        pl-700: "TD-K:ECSF:5103:2:700:1:0"
+        pl-850: "TD-K:ECSF:5103:2:850:1:0"
+        pl-925: "TD-K:ECSF:5103:2:925:1:0"
+    name:  "dewpoint temperature"
+    units: "K"
+  td2_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TD2-K:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TD2-K:ECSF:5103:1:0:1:0"
+    name:  "2 metre dewpoint temperature"
+    units: "K"
+  tcwv_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TOTCWV-KGM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TOTCWV-KGM2:ECSF:5103:1:0:1:0"
+    name:  "total column water vapour"
+    units: "kg/m^2"
+  sst_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TSEA-K:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TSEA-K:ECSF:5103:1:0:1:0"
+    name:  "sea temperature"
+    units: "K"
+  u_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "U-MS:ECSF:5094:2:500:1:0"
+        pl-700: "U-MS:ECSF:5094:2:700:1:0"
+        pl-850: "U-MS:ECSF:5094:2:850:1:0"
+        pl-925: "U-MS:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "U-MS:ECSF:5103:2:500:1:0"
+        pl-700: "U-MS:ECSF:5103:2:700:1:0"
+        pl-850: "U-MS:ECSF:5103:2:850:1:0"
+        pl-925: "U-MS:ECSF:5103:2:925:1:0"
+    name:  "u-wind"
+    units: "m/s"
+  u10_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "U10-MS:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "U10-MS:ECSF:5103:1:0:1:0"
+    name:  "10 metre u wind component"
+    units: "m/s"
+  v_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "V-MS:ECSF:5094:2:500:1:0"
+        pl-700: "V-MS:ECSF:5094:2:700:1:0"
+        pl-850: "V-MS:ECSF:5094:2:850:1:0"
+        pl-925: "V-MS:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "V-MS:ECSF:5103:2:500:1:0"
+        pl-700: "V-MS:ECSF:5103:2:700:1:0"
+        pl-850: "V-MS:ECSF:5103:2:850:1:0"
+        pl-925: "V-MS:ECSF:5103:2:925:1:0"
+    name:  "v-wind"
+    units: "m/s"
+  v10_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "V10-MS:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "V10-MS:ECSF:5103:1:0:1:0"
+    name:  "10 metre v wind component"
+    units: "m/s"
+  vp_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "VP-M2S:ECSF:5094:2:500:1:0"
+        pl-700: "VP-M2S:ECSF:5094:2:700:1:0"
+        pl-850: "VP-M2S:ECSF:5094:2:850:1:0"
+        pl-925: "VP-M2S:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "VP-M2S:ECSF:5103:2:500:1:0"
+        pl-700: "VP-M2S:ECSF:5103:2:700:1:0"
+        pl-850: "VP-M2S:ECSF:5103:2:850:1:0"
+        pl-925: "VP-M2S:ECSF:5103:2:925:1:0"
+    name:  "velocity potential"
+    units: "m^2/s"
+  swvl_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        sl-0:   "VSW-M3M3:ECSF:5094:9:0:0:0"
+        sl-7:   "VSW-M3M3:ECSF:5094:9:7:0:0"
+        sl-28:  "VSW-M3M3:ECSF:5094:9:28:0:0"
+        sl-100: "VSW-M3M3:ECSF:5094:9:100:0:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        sl-0:   "VSW-M3M3:ECSF:5103:9:0:0:0"
+        sl-7:   "VSW-M3M3:ECSF:5103:9:7:0:0"
+        sl-28:  "VSW-M3M3:ECSF:5103:9:28:0:0"
+        sl-100: "VSW-M3M3:ECSF:5103:9:100:0:0"
+    name:  "volumetric soil moisture"
+    units: "m^3/m^3"
+  z_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "Z-M2S2:ECSF:5094:2:500:1:0"
+        pl-700: "Z-M2S2:ECSF:5094:2:700:1:0"
+        pl-850: "Z-M2S2:ECSF:5094:2:850:1:0"
+        pl-925: "Z-M2S2:ECSF:5094:2:925:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0, 12]
+      fmikeys: 
+        pl-500: "Z-M2S2:ECSF:5103:2:500:1:0"
+        pl-700: "Z-M2S2:ECSF:5103:2:700:1:0"
+        pl-850: "Z-M2S2:ECSF:5103:2:850:1:0"
+        pl-925: "Z-M2S2:ECSF:5103:2:925:1:0"
+    name:  "geopotential"
+    units: "m^2/s^2"
+
+agg_24h:
+  e_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "EVAP-M:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "EVAP-M:ECSF:5103:1:0:1:0"
+    name:  "evaporation"
+    units: "m of water equivalent"
+  ewss_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "EWSS-NM2S:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "EWSS-NM2S:ECSF:5103:1:0:1:0"
+    name:  "eastward surface stress due to turbulent processes"
+    units: "Ns/m^2"
+  slhf_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "FLLAT-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "FLLAT-JM2:ECSF:5103:1:0:1:0"
+    name:  "latent heat flux"
+    units: "J/m^2"
+  sshf_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "FLSEN-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "FLSEN-JM2:ECSF:5103:1:0:1:0"
+    name:  "sensible heat flux"
+    units: "J/m^2"
+  nsss_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "NSSS-NM2S:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "NSSS-NM2S:ECSF:5103:1:0:1:0"
+    name:  "northward surface stress due to turbulent processes"
+    units: "Ns/m^2"
+  ssrd_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RADGLOA-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RADGLOA-JM2:ECSF:5103:1:0:1:0"
+    name:  "global radiation accumulation"
+    units: "J/m^2"
+  strd_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RADLWA-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RADLWA-JM2:ECSF:5103:1:0:1:0"
+    name:  "long wave radiation accumulation"
+    units: "J/m^2"
+  str_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RNETLWA-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RNETLWA-JM2:ECSF:5103:1:0:1:0"
+    name:  "net long wave radiation accumulation"
+    units: "J/m^2"
+  ssr_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RNETSWA-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RNETSWA-JM2:ECSF:5103:1:0:1:0"
+    name:  "net short wave radiation accumulation"
+    units: "J/m^2"
+  ro_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RO-M:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RO-M:ECSF:5103:1:0:1:0"
+    name:  "runoff"
+    units: "m"
+  tp_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RR-M:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RR-M:ECSF:5103:1:0:1:0"
+    name:  "total precipitation"
+    units: "m"
+  ttr_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RTOPLWA-JM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RTOPLWA-JM2:ECSF:5103:1:0:1:0"
+    name:  "net long wave radiation accumulation, top of atmosphere"
+    units: "J/m^2"
+  sf_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "SNACC-KGM2:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "SNACC-KGM2:ECSF:5103:1:0:1:0"
+    name:  "snow fall accumulation"
+    units: "kg/m^2"
+  mx2t24_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TMAX-24-K:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TMAX-24-K:ECSF:5103:1:0:1:0"
+    name:  "maximum temperature in the preceding 24 hours period of the date-value"
+    units: "K"
+  mn2t24_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TMIN-24-K:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TMIN-24-K:ECSF:5103:1:0:1:0"
+    name:  "minimum temperature in the preceding 24 hours period of the date-value"
+    units: "K"
+  tsr_ecsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TSR-J:ECSF:5094:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TSR-J:ECSF:5103:1:0:1:0"
+    name:  "top net solar radiation"
+    units: "J"

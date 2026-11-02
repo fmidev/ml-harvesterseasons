@@ -1,0 +1,706 @@
+# SmartMet parameter definitions for ERA5-Land available variables on ml.harvesterseasons.com 
+# smartmet: parameter FMI key on smartmet server
+# name: name of the variable
+# units: available units
+# tsteps: available time steps (in hours) to query
+# unified ml names drop producer from these
+# unit conversions (to target prediction type - ec-ens etc)
+# areas = europe, india-himalayas, etc 
+# origintimes: origintime parameters for mean, max and min data
+
+instant:
+  t2_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "T2-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "T2-K:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "2 m temperature"
+    units: "K"
+  td2_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "TD2-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TD2-K:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "2 m dewpoint temperature"
+    units: "K"
+  fal_era5l:
+    eu: # 1995-2024EVAP-M:ERA5:5101:1:0:1:0EVAP-M:ERA5:5101:1:0:1:0
+      source: ml.harvesterseasons.com
+      fmikey: "ALBEDOSLR-0TO1:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "forecast albedo"
+    units: "0-1"
+  asn_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "ASN-0TO1:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "ASN-0TO1:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snow albedo"
+    units: "0-1"
+  sd_era5l: 
+    eu: #1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "HSNOW-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SD-M:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snow depth"
+    units: "m"
+  sde_era5l:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SDE-CM:ERA5L::1:0:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snow depth elevation"
+    units: "cm"
+  laihv_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LAI_HV-M2M2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "leaf area index high vegetation"
+    units: "m^2/m^2"
+  lailv_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LAI_LV-M2M2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "leaf area index low vegetation"
+    units: "m^2/m^2"
+  lblt_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LBLT-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake bottom temperature"
+    units: "K"
+  licd_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LICD-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake ice depth"
+    units: "m"
+  lict_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LICT-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake ice temperature"
+    units: "K"
+  lmld_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LMLD-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake mix-layer depth"
+    units: "m"
+  lmlt_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LMLT-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake mix-layer temperature"
+    units: "K"
+  lshf_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LSHF:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake shape factor"
+    units: ""
+  ltlt_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "LTLT-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "lake total layer temperature"
+    units: "K"
+  sp_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "PGR-PA:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface pressure"
+    units: "Pa"
+  skt_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SKT-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SKT-K:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "skin temperature"
+    units: "K"
+  rsn_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SND-KGM3:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SND-KGM3:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snow density"
+    units: "kg/m^3"
+  snowc_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SNOWC-PRCNT:ERA5L:5099:1:0:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SNOWC:ERA5L::1:0:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snow cover"
+    units: "%"
+  swvl1_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SOILWET-M3M3:ERA5L:5099:9:7:1:0"
+      tsteps: [0, 12]
+    name:  "volumetric soil water layer 1"
+    units: "m^3/m^3"
+  src_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SRC-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "skin reservoir content"
+    units: "m of water equivalent"
+  stl1_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "STL1-K:ERA5L:5099:9:7:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL1-K:ERA5L::9:7:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "soil temperature level 1"
+    units: "K"
+  stl3_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "STL3-K:ERA5L:5099:9:7268:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL3-K:ERA5L::9:7268:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "soil temperature level 3"
+    units: "K"
+  stl4_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "STL4-K:ERA5L:5099:9:25855:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL4-K:ERA5L::9:25855:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "soil temperature level 4"
+    units: "K"
+  swvl2_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SWVL2-M3M3:ERA5L:5099:9:1820:1:0"
+      tsteps: [0, 12]
+    name:  "volumetric soil water layer 2"
+    units: "m^3/m^3"
+  swvl3_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SWVL3-M3M3:ERA5L:5099:9:7268:1:0"
+      tsteps: [0, 12]
+    name:  "volumetric soil water layer 3"
+    units: "m^3/m^3"
+  swvl4_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SWVL4-M3M3:ERA5L:5099:9:25855:1:0"
+      tsteps: [0, 12]
+    name:  "volumetric soil water layer 4"
+    units: "m^3/m^3"
+  tsn_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "TSN-K:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TSN-K:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "temperature of snow layer"
+    units: "K"
+  stl2_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "TSOIL-K:ERA5L:5099:9:1820:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TSOIL-K:ERA5L::9:1820:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "soil temperature level 2"
+    units: "K"
+  u10_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "U10-MS:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "10 m u-component of wind"
+    units: "m/s"
+  v10_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "V10-MS:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "10 m v-component of wind"
+    units: "m/s"
+
+agg_24h:
+  es_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "ES-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "snow evaporation"
+    units: "m of water equivalent"
+  evabs_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVABS-M:ERA5L:5099:1:0:0"
+      tsteps: [0, 12]
+    name:  "evaporation from bare soil"
+    units: "m of water equivalent"
+  evaow_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVAOW-M:ERA5L:5099:1:0:0"
+      tsteps: [0, 12]
+    name:  "evaporation from open water surfaces excluding oceans"
+    units: "m of water equivalent"
+  e_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVAP-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "total evaporation"
+    units: "m of water equivalent"
+  pev_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVAPP-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "potential evaporation"
+    units: "m"
+  evatc_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVATC-M:ERA5L:5099:1:0:0"
+      tsteps: [0, 12]
+    name:  "evaporation from top of canopy"
+    units: "m of water equivalent"
+  evavt_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "EVAVT-M:ERA5L:5099:1:0:0"
+      tsteps: [0, 12]
+    name:  "evaporation from vegetation transpiration"
+    units: "m of water equivalent"
+  slhf_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "FLLAT-JM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "latent heat flux"
+    units: "J/m^2"
+  sshf_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "FLSEN-JM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "sensible heat flux"
+    units: "J/m^2"
+  ssrd_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RADGLOA-JM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface short-wave (solar) radiation downwards"
+    units: "J/m^2"
+  strd_era5l:
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RADLWA-JM2:ERA5L:5078:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface long-wave (thermal) radiation downwards"
+    units: "J/m^2"
+  str_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RNETLWA-JM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface net long-wave (thermal) radiation"
+    units: "J/m^2"
+  ssr_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RNETSWA-JM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface net short-wave (solar) radiation"
+    units: "J/m^2"
+  ro_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RO-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "runoff"
+    units: "m"
+  tp_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "RR-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "total precipitation"
+    units: "m"
+  smlt_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SMLT-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SMLT-M:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snowmelt"
+    units: "m of water equivalent"
+  sf_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SNACC-KGM2:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SNACC-KGM2:ERA5L::1:0:1:0"
+      tsteps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    name:  "snowfall"
+    units: "m of water equivalent"
+  sro_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SRO-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "surface runoff"
+    units: "m"
+  ssro_era5l: 
+    eu: # 1995-2024
+      source: ml.harvesterseasons.com
+      fmikey: "SSRO-M:ERA5L:5099:1:0:1:0"
+      tsteps: [0, 12]
+    name:  "sub-surface runoff"
+    units: "m"
+
+dailystats: 
+  asn_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "ASN-0TO1:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow albedo"
+    units: "0-1"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  sd_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SD-M:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow depth"
+    units: "m"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  skt_era5ld:
+    eu: # 1995-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SKT-K:ERA5LD:5093:1:0:1"
+      tsteps: [0]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SKT-K:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "skin temperature"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  snd_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "SND-KGM3:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow density"
+    units: "kg/m^3"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  stl1_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL1-K:ERA5LD:5082:9:7:1"
+      tsteps: [1130]
+    name:  "soil temperature level 1"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  stl2_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TSOIL-K:ERA5LD:5082:9:1820:1"
+      tsteps: [1130]
+    name:  "soil temperature level 2"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  stl3_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL3-K:ERA5LD:5082:9:7268:1"
+      tsteps: [1130]
+    name:  "soil temperature level 3"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  stl4_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "STL4-K:ERA5LD:5082:9:25600:1"
+      tsteps: [1130]
+    name:  "soil temperature level 4"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  t2_era5ld:
+    eu: # 1995-2025
+      source: sm.cryo-scope.eu
+      fmikey: "T2-K:ERA5LD:5093:1:0:1"
+      tsteps: [0]
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "T2-K:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "2 metre temperature"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  td2_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TD2-K:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "2 metre dewpoint temperature"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+  tsn_era5ld:
+    in: # 2000-2025
+      source: sm.cryo-scope.eu
+      fmikey: "TSN-K:ERA5LD:5082:1:0:1"
+      tsteps: [1130]
+    name:  "temperature of snow layer"
+    units: "K"
+    origintimes:
+      mean: "20000101T000000"
+      max:  "20000201T000000"
+      min:  "20000301T000000"
+
+climatologies:
+  asn_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "ASN-0TO1:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow albedo"
+    units: "0-1"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  sd_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "SD-M:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow depth"
+    units: "m"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  skt_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "SKT-K:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "skin temperature"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  snd_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "SND-KGM3:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "snow density"
+    units: "kg/m^3"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  stl1_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "STL1-K:ERA5LC:5082:9:7:1"
+      tsteps: [1130]
+    name:  "soil temperature level 1"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  stl2_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "TSOIL-K:ERA5LC:5082:9:1820:1"
+      tsteps: [1130]
+    name:  "soil temperature level 2"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  stl3_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "STL3-K:ERA5LC:5082:9:7268:1"
+      tsteps: [1130]
+    name:  "soil temperature level 3"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  stl4_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "STL4-K:ERA5LC:5082:9:25600:1"
+      tsteps: [1130]
+    name:  "soil temperature level 4"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  t2_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "T2-K:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "2 metre temperature"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  td2_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "TD2-K:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "2 metre dewpoint temperature"
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"
+  tsn_era5lc:
+    in: # 2020
+      source: sm.cryo-scope.eu
+      fmikey: "TSN-K:ERA5LC:5082:1:0:1"
+      tsteps: [1130]
+    name:  "temperature of snow layer
+    units: "K"
+    origintimes:
+      dmean: "20000101T000000" # daily
+      dmax:  "20000201T000000"
+      dmin:  "20000301T000000"
+      mmean: "20230101T000000" # monthly
+      mmax:  "20230201T000000"
+      mmin:  "20230301T000000"

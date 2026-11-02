@@ -1,0 +1,163 @@
+# SmartMet parameter definitions for ECBSF (bias adjusted) available variables on sm.cryo-scope.eu and smartmet.xyz
+# fmikey: parameter FMI key (for different levels, sl = soil layer in cm) on smartmet server
+# name: name of the variable
+# units: available units
+# tsteps: available time steps (in hours) to query
+# areas: eu = europe, in = india-himalayas, etc.
+
+instant:
+  ws_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "FF-MS:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "FF-MS:ECBSF:5022:1:0:1:0"
+    name: "wind speed"
+    units: "m/s"
+  sde_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "HSNOW-M:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "HSNOW-M:ECBSF:5022:1:0:1:0"
+    name: "surface snow thickness"
+    units: "m"
+  sd_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "SD-M:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "SD-M:ECBSF:5022:1:0:1:0"
+    name: "snow depth"
+    units: "m"
+  rsn_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "SND-KGM3:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "SND-KGM3:ECBSF:5022:1:0:1:0"
+    name: "snow density"
+    units: "kg/m^3"
+  stl1_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "STL1-K:ECBSF:5082:9:7:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "STL1-K:ECBSF:5022:9:7:1:0"
+    name: "soil temperature level 1"
+    units: "K"
+  stl2_ecbsf:
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TSOIL-K:ECBSF:5022:9:7:1:0"
+    name: "soil temperature level 2"
+    units: "K"
+  stl3_ecbsf:
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "STL3-K:ECBSF:5022:9:7:1:0"
+    name: "soil temperature level 3"
+    units: "K"
+  stl4_ecbsf:
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "STL4-K:ECBSF:5022:9:7:1:0"
+    name: "soil temperature level 4"
+    units: "K"
+  t2_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "T2-K:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "T2-K:ECBSF:5022:1:0:1:0"
+    name: "2 metre temperature"
+    units: "K"
+  td2_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "TD2-K:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "TD2-K:ECBSF:5022:1:0:1:0"
+    name: "2 metre dewpoint temperature"
+    units: "K"
+  u10_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "U10-MS:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "U10-MS:ECBSF:5022:1:0:1:0"
+    name: "10 metre u wind component"
+    units: "m/s"
+  v10_ecbsf:
+    in:
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "V10-MS:ECBSF:5082:1:0:1:0"
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "V10-MS:ECBSF:5022:1:0:1:0"
+    name: "10 metre v wind component"
+    units: "m/s"
+  swvl_ecbsf:
+    eu:
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikeys: 
+        sl-0:   "VSW-M3M3:ECBSF:5022:9:0:0:0"
+        sl-7:   "VSW-M3M3:ECBSF:5022:9:7:0:0"
+        sl-28:  "VSW-M3M3:ECBSF:5022:9:28:0:0"
+        sl-100: "VSW-M3M3:ECBSF:5022:9:1:0:0"
+    name:  "volumetric soil moisture"
+    units: "m^3/m^3"
+
+agg_24h:
+  e_ecbsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "EVAP-M:ECBSF:5082:1:0:1:0"
+    eu: 
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "EVAP-M:ECBSF:5022:1:0:1:0"
+    name:  "evaporation"
+    units: "m of water equivalent"
+  tp_ecbsf:
+    in: 
+      source: sm.cryo-scope.eu
+      tsteps: [0]
+      fmikey: "RR-M:ECBSF:5082:1:0:1:0"
+    eu: 
+      source: smartmet.xyz
+      tsteps: [0]
+      fmikey: "RR-M:ECBSF:5022:1:0:1:0"
+    name:  "total precipitation"
+    units: "m"
