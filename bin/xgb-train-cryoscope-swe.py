@@ -37,6 +37,7 @@ OBJECTIVE='reg:tweedie'
 RMSE_TOL=0.05          # final trial: highest KGE on the Pareto front with RMSE at most 5 % above the front's best RMSE
 print('optuna version:',optuna.__version__)  # multi-objective TPE needs optuna >= 3.0
 DROP_LATLON=False
+SD_CHANGE_DAYS=8       # window (days) for the sd_00 change feature: sd_00(t) minus sd_00(t-8)
 
 # Kling-Gupta efficiency: correlation, variability ratio and bias ratio in one score (1 = perfect)
 def kge(o,p):
@@ -102,17 +103,23 @@ df_input['utctime'] = pd.to_datetime(df_input['utctime'])
 df_input['doy_cos'] = np.cos(2 * np.pi * df_input['utctime'].dt.dayofyear / 365.25)
 df_input['doy_sin'] = np.sin(2 * np.pi * df_input['utctime'].dt.dayofyear / 365.25)
 
-# lag-1: previous day's sd_00 at the SAME location; NaN if that day is missing
+# lag features at the SAME location, computed on the continuous series BEFORE the snow-season split:
+#   sd_00_lag1: previous day's sd_00; NaN if that day is missing
+#   sd_00_d8:   sd_00(t) minus sd_00(t-8), the 8-day net change (build-up > 0, melt < 0); NaN if day t-8 is not exactly 8 rows back
 df_input['date']=df_input['utctime'].dt.normalize()
 df_input=df_input.sort_values(['latitude','longitude','date']).reset_index(drop=True)
 loc=df_input.groupby(['latitude','longitude'],sort=False)
 prev_sde=loc['sd_00'].shift(1)
 prev_date=loc['date'].shift(1)
 df_input['sd_00_lag1']=prev_sde.where(df_input['date']-prev_date==pd.Timedelta(days=1))
+sd_k=loc['sd_00'].shift(SD_CHANGE_DAYS)
+date_k=loc['date'].shift(SD_CHANGE_DAYS)
+df_input[f'sd_00_d{SD_CHANGE_DAYS}']=(df_input['sd_00']-sd_k).where(df_input['date']-date_k==pd.Timedelta(days=SD_CHANGE_DAYS))
 df_input=df_input.drop(columns='date')
-del loc,prev_sde,prev_date
+del loc,prev_sde,prev_date,sd_k,date_k
 print('duplicate location-days:',int(df_input.duplicated(['latitude','longitude','utctime']).sum()))
 print('sd_00_lag1 NaN fraction:',round(float(df_input['sd_00_lag1'].isna().mean()),4))
+print(f'sd_00_d{SD_CHANGE_DAYS} NaN fraction:',round(float(df_input[f'sd_00_d{SD_CHANGE_DAYS}'].isna().mean()),4))
 
 # snow season: Sep-Dec belong to that year's season, Jan-Aug to the previous year's season
 SNOW_START_MONTH=9
@@ -352,6 +359,7 @@ for domain in domains:
     hp_out.update({"objective":OBJECTIVE,"eval_metric":"rmse","tree_method":"hist",
                    "num_parallel_tree":1,"variant":variant,"domain":domain,"n_estimators_earlystop":best_iter,
                    "n_features":len(features),"features":features,"drop_latlon":DROP_LATLON,
+                   "sd_change_days":SD_CHANGE_DAYS,
                    "split_by":"snowseason","snow_start_month":SNOW_START_MONTH,
                    "train_seasons":train_seasons,"valid_seasons":valid_s,
                    "tuning":"multi-objective (min valid RMSE, max valid KGE)","rmse_tol":RMSE_TOL,

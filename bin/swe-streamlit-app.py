@@ -1,7 +1,11 @@
 # CryoSCOPE SWE model dashboard: training runs (Optuna, SHAP, EDA), independent validation, validation explorer
 # and SWE forecast predictions validated against HKL
+# pages: Training, Validation, SWE prediction 10 / 15 days and SWE prediction seasonal show only the used model (USED_MODEL, FIN5);
+#        Training explorer, Validation explorer and the two Compare pages show every iteration (model edition)
 # reads the outputs of the tuning script (models/, results/), the validation script (validationresults_<optuna_tag>/, one folder per model)
-# and the ECXENS vs HKL forecast validation script (validation/<model>/<start date>/<prediction>/, copied from the forecast server)
+# the 10 day ECXENS vs HKL forecast validation script (validation_ecens/<model>/<start date>/<prediction>/, copied from the forecast server)
+# and the seasonal ECXSF vs HKL validation script swe-seasonal-validation.py
+# (validation_sf/<model>/<start date>/<prediction>/ or validation_sf/<model>/<prediction>/, run_info.json in the folder above <prediction>/)
 # run: streamlit run swe-streamlit-app.py --server.port 8501 --server.address 0.0.0.0
 import os,glob,json
 import numpy as np
@@ -40,14 +44,40 @@ ME_MAX=75.0    # mm, fixed symmetric colour scale for ME and difference maps: -M
 
 # SWE predictions page: prediction folders written by the forecast validation script, shown in this order (any others after them)
 FC_ORDER=['ensmean','member01','wettest','driest']
-# layout: validation/<model>/<start date>/<prediction>/, e.g. validation/FINmulti/20230210/wettest/swe_metrics.csv
+# layout: validation_ecens/<model>/<start date>/<prediction>/, e.g. validation_ecens/FIN5/20230210/wettest/swe_metrics.csv
+#   (the folder is set by SWE_PRED_DIR or in the sidebar, default <snowmodel directory>/validation_ecens)
 #   <model>      model edition (optuna_tag) that made the ECXENS forecast, any name works (also models not in EDITION_NAMES);
 #                'model' in <start date>/run_info.json overrides the folder name
 #   <start date> forecast base date, YYYYMMDD (also YYYYMMDDTHHMMSS, YYYYMMDDHH or YYYY-MM-DD); 'base_time' in run_info.json
 #                overrides it, and a folder name that is no date falls back to the most common (date minus lead day) in the scores
 #   <prediction> ensmean, member01, wettest, driest, ... each with swe_metrics.csv and the png figures
-# older layouts still work: validation/<model>/<prediction>/ (start date from the scores) and validation/<prediction>/ (model FC_DEFAULT_MODEL)
-FC_DEFAULT_MODEL='FINmulti'
+# older layouts still work: validation/<model>/<prediction>/ (start date from the scores) and validation/<prediction>/ (model FC_LEGACY_MODEL,
+# the model those old results came from)
+# region: 'region' in run_info.json, else a region suffix on the model folder (FIN5noclim_Alps, FIN5noclim_alps, FIN5noclim-Alps),
+#   else FC_DEFAULT_REGION; e.g. validation/FIN5noclim_Alps/20230210/ is model FIN5noclim, region Alps
+FC_LEGACY_MODEL='FINmulti'
+FC_DEFAULT_REGION='Scandinavia'
+FC_REGIONS={'alps':'Alps','scandi':'Scandinavia','scandinavia':'Scandinavia'}   # folder suffix / run_info region (lower case) -> shown name
+# the model edition in use: the Training, Validation and SWE prediction pages (10 / 15 days and seasonal) show only this one,
+# the explorer and compare pages show every iteration. If this exact tag has no results, the first edition whose name starts
+# with USED_PREFIX is used (so a retrained FIN5... edition shows up without editing this line)
+USED_MODEL='FIN5noclim'
+USED_PREFIX='FIN5'
+# shown first and picked by default on the explorer and compare pages
+PROD_MODEL=USED_MODEL
+# model folder name -> model edition, 10 / 15 days and seasonal (validation_ecens/FIN5, validation_ecens/FIN5_Alps, validation_sf/FIN2, validation_sf/FIN5)
+MODEL_ALIASES={'FIN2':'FIN2multiNoMax','FIN5':'FIN5noclim'}
+def prod_first(models,first=PROD_MODEL): return sorted(models,key=lambda m:(m!=first,m))
+def used_model(models):
+    # USED_MODEL if it is among the models, else the first one starting with USED_PREFIX, else None
+    models=list(models)
+    if USED_MODEL in models: return USED_MODEL
+    return next((m for m in models if str(m).lower().startswith(USED_PREFIX.lower())),None)
+def default_model(models,first=PROD_MODEL):
+    # given model (production by default) if it has results, else the edition picked on the Training explorer page, else the first
+    if first in models: return first
+    ed=st.session_state.get('edition_keep')
+    return ed if ed in models else models[0]
 FC_SKIP_DIRS={'app_cache','tmp','__pycache__'}   # folders under validation/ that are never models, start dates or predictions
 # names shown when a folder has no pred_info.json; member1, member01, ... are named 'ECXENS member N' automatically
 FC_NAMES={'ensmean':'ECXENS ens mean','wettest':'ECXENS wettest member','driest':'ECXENS driest member'}
@@ -57,7 +87,61 @@ MEMBER_STATS={'mean':'domain mean SWE, all lead days','mean_last_day':'domain me
 # scores in swe_metrics.csv -> (label, unit); 'snow_' versions use only pixels where forecast or HKL has at least 1 mm
 FC_METRICS={'bias':('bias (forecast minus HKL)','mm'),'mae':('MAE','mm'),'rmse':('RMSE','mm'),'r':('correlation r',''),'kge':('KGE','')}
 
-# training locations figures in the snowmodel directory: area -> file name prefix; shown on the Training run page
+# start dates (cases) of the used model on the SWE prediction pages: region -> {start date: (what the case tests, out of training seasons)}
+# out of training = True is marked with ★. Results for start dates not listed here still show up, without a description.
+# 10 / 15 day ECXENS starts, 00 UTC, 1 to 3 days before the event
+FC_CASES={
+    'Alps':{
+        '2018-01-19':('level 5 snowfall, rain at lower elevations',False),
+        '2018-04-10':('rapid April melt',False),
+        '2019-01-01':('continuous northern snowfall',False),
+        '2019-01-08':('continuous northern snowfall, second start',False),
+        '2020-12-03':('southern extreme snowfall',False),
+        '2024-05-28':('late high elevation snow',False),
+        '2024-11-17':('low altitude November dump',True),
+        '2025-01-25':('snowfall up to the level 4 avalanche danger of 28 Jan',True),
+        '2025-03-08':('southern stau',True),
+        '2025-11-22':('late November burst',True),
+        '2025-12-15':('dry, snow poor persistence (nothing happens control)',True)},
+    'Scandinavia':{
+        '2018-05-05':('record warm May melt',False),
+        '2019-12-10':('record December snow in Lapland',False),
+        '2020-04-08':('record April snow depth',False),
+        '2020-05-18':('melt flood onset',False),
+        '2023-01-04':('heavy snowfall in Ångermanland, normal year',False),
+        '2024-01-01':('extreme cold and snowstorm in Skåne',True),
+        '2024-01-15':('nationwide snowfall',True),
+        '2025-01-10':('föhn warm spell',True),
+        '2026-01-15':('dry, cold, thin snow, fire danger in Rogaland',True),
+        '2026-03-01':('March partial melt in a deficit year',True)}}
+# seasonal ECXSF starts (215 days): Nov 1 covers accumulation, peak and most melt; Feb 1 or Mar 1 melt timing; Oct 1 onset
+SF_CASES={
+    'Alps':{
+        '2016-11-01':('very little snow, late start',False),
+        '2017-11-01':('very much snow, then early melt',False),
+        '2018-03-01':('very much snow, then early melt (melt start)',False),
+        '2018-12-01':('north extreme, south dry',False),
+        '2021-11-01':('snow drought',False),
+        '2022-02-01':('snow drought (melt start)',False),
+        '2023-11-01':('elevation split, long high altitude season',False),
+        '2024-03-01':('elevation split, long high altitude season (melt start)',False),
+        '2024-11-01':('poor north and east, normal south',True),
+        '2025-02-01':('poor north and east, normal south (melt start)',True),
+        '2025-11-01':('record dry south, early burst',True),
+        '2026-02-01':('record dry south, early burst (melt start)',True)},
+    'Scandinavia':{
+        '2017-11-01':('snowy, early melt, wildfire summer',False),
+        '2018-03-01':('snowy, early melt, wildfire summer (melt start)',False),
+        '2019-10-01':('long season north, snowless south (onset)',False),
+        '2019-12-01':('long season north, snowless south, Kemijoki melt',False),
+        '2022-11-01':('near normal',False),
+        '2023-11-01':('cold, snowy, long season',True),
+        '2024-03-01':('cold, snowy, long season (melt start)',True),
+        '2024-11-01':('mild, little snow',True),
+        '2025-11-01':('snow drought south Norway, winter fire risk',True),
+        '2026-01-01':('snow drought south Norway, winter fire risk (second start)',True)}}
+
+# training locations figures in the snowmodel directory: area -> file name prefix; shown on the Training and Training explorer pages
 TRAIN_LOC_FIGS={'Scandinavia':'dem+fch_merged_fch25','Alps':'dem+fch_merged_alps_fch2'}
 # figure suffix -> caption, in the order shown (the polar plot is left out on purpose)
 TRAIN_LOC_KINDS=[('map_height','elevation'),('map_slope','slope'),('map_aspect','aspect'),
@@ -68,7 +152,25 @@ VAL_LOC_FIGS={'Scandinavia':'validation_dem+fch_merged_fin25_10000_fscs1_scandi_
               'Alps':'validation_dem+fch_merged_fin2_10000_fscs1_alps_map.png'}
 
 # model editions = optuna_tag of the training run -> name shown in the app; unknown tags are shown as they are
-EDITION_NAMES={'FINmulti':'FINmulti','MANYfeatures':'MANYfeatures'}
+EDITION_NAMES={'FINmulti':'FINmulti','MANYfeatures':'MANYfeatures','FIN2multiNoMax':'FIN2multiNoMax','FIN5noclim':'FIN5noclim (used model)'}
+
+# Overview page text: what the SWE ML work is and how the pages fit together; edit freely (markdown)
+OVERVIEW_INTRO=('The CryoSCOPE SWE model is an XGBoost trained machine learning model that estimates daily snow water equivalent (SWE) '
+                'from weather, terrain and land cover data, for two domains: the Alps and Fenno-Scandinavia. '
+                'Target "truth" in training is SWE from Snowcap ([snowcap.info](https://snowcap.info)), a daily 500 m product. '
+                'The end product is SWE forecasts, driven by ECMWF ensemble forecasts from 10 to 15 days (ECXENS) '
+                'up to a full season of 215 days (ECXSF).')
+OVERVIEW_PAGES='''
+**Pages**
+* **Training**: training run of the used model (FIN5): features, tuning, fit, SHAP, EDA and training locations
+* **Training explorer**: every training iteration (model edition), with the editions compared side by side
+* **Validation**: independent validation of the used model: scores, maps, monthly and snow season scores, location time series
+* **Validation explorer**: the same for every iteration, and all iterations compared
+* **SWE prediction 10 / 15 days**: ECXENS forecasts (10 or 15 day ensemble) of the used model against HKL, divided by start date
+* **Compare SWE predictions 10 / 15 days**: ECXENS of several model editions side by side, or any edition in detail
+* **SWE prediction seasonal**: ECXSF monthly means of the used model against HKL, divided by start date
+* **Compare SWE predictions seasonal**: ECXSF of several model editions side by side, or any edition in detail
+'''
 
 # feature descriptions for the Features tab: name -> (group, description, units)
 # units are ECMWF native units unless the fetch converted them; edit freely, unknown features still show up as 'other'
@@ -141,11 +243,15 @@ def edition_label(tag,runs):
 # Sidebar: navigation and paths
 # ---------------------------------------------------------------
 st.sidebar.title('❄️ CryoSCOPE ML SWE')
-page=st.sidebar.radio('page',['Overview','Training run','Validation','Validation explorer','SWE predictions','Compare SWE models'])
+PAGES=['Overview','Training','Training explorer','Validation','Validation explorer',
+       'SWE prediction 10 / 15 days','Compare SWE predictions 10 / 15 days','SWE prediction seasonal','Compare SWE predictions seasonal']
+page=st.sidebar.radio('page',PAGES,
+                      help='10 days: ECXENS (downscaled EC ensemble, daily). Seasonal: ECXSF (downscaled EC seasonal forecast, monthly means).')
 with st.sidebar.expander('data paths',expanded=False):
     base=st.text_input('snowmodel directory',os.environ.get('SNOWMODEL_DIR','/home/ubuntu/data/cryoscope/snowmodel/'))
     optuna_db=st.text_input('optuna sqlite',os.environ.get('OPTUNA_DB','/home/ubuntu/data/ML/MLexperiments.sqlite3'))
-    PRED_DIR=st.text_input('SWE prediction validation directory',os.environ.get('SWE_PRED_DIR',os.path.join(base,'validation')))
+    PRED_DIR=st.text_input('10 day (ECXENS) validation directory',os.environ.get('SWE_PRED_DIR',os.path.join(base,'validation_ecens')))
+    SF_DIR=st.text_input('seasonal (ECXSF) validation directory',os.environ.get('SWE_SF_DIR',os.path.join(base,'validation_sf')))
 
 def read_json(p):
     try:
@@ -174,7 +280,7 @@ def val_dir_for(stem):
         if read_json(os.path.join(base,d,'run_info.json')).get('training_stem')==stem: return d
     return None
 MOD_DIR=os.path.join(base,'models'); RES_DIR=os.path.join(base,'results')
-VAL_DIR=FIG_DIR=None   # set by pick_val_model() on the Validation and Validation explorer pages
+VAL_DIR=FIG_DIR=None   # set by use_val() on the Validation and Validation explorer pages
 if st.sidebar.button('reload files'):
     st.cache_data.clear(); st.cache_resource.clear()
 
@@ -318,12 +424,17 @@ def use_val(d):
     global VAL_DIR,FIG_DIR
     VAL_DIR=os.path.join(base,d); FIG_DIR=os.path.join(VAL_DIR,'figs')
 
-def pick_val_model():
-    # model edition selection for the Validation and Validation explorer pages; shares the choice with the Training run page
+def val_models():
+    # training runs, validated model editions (newest training first) and editions not validated yet
     runs=training_runs(MOD_DIR)
     trained=list(dict.fromkeys(r['optuna_tag'] for r in runs))   # newest training run first
     tags=[t for t in trained if t in VAL_BY_TAG]+sorted(t for t in VAL_BY_TAG if t not in trained)
     todo=[t for t in trained if t not in VAL_BY_TAG]
+    return runs,tags,todo
+
+def pick_val_model():
+    # model edition selection for the Validation explorer page; shares the choice with the Training explorer page
+    runs,tags,todo=val_models()
     if not tags:
         st.warning(f'no validationresults_<tag>/ folders with validation_metrics.csv in {base}')
         if todo: st.code('python xgb-validate-cryo-swe.py missing',language='bash')
@@ -406,7 +517,7 @@ def fc_pred_dirs(p):
     return sorted((os.path.join(p,d) for d in fc_subdirs(p) if os.path.exists(os.path.join(p,d,'swe_metrics.csv'))),key=fc_sort_key)
 
 def fc_date_from_name(name):
-    for f in ('%Y%m%d','%Y%m%dT%H%M%S','%Y%m%d%H','%Y-%m-%d'):
+    for f in ('%Y%m%d','%Y%m%dT%H%M%S','%Y%m%d%H','%Y-%m-%d','%Y%m'):   # %Y%m: seasonal folders like 202601
         try: return pd.to_datetime(name,format=f)
         except (ValueError,TypeError): pass
     return None
@@ -420,19 +531,46 @@ def fc_base_from_scores(pred):
     except Exception:
         return None
 
+def fc_region_name(r):
+    # 'alps' / 'Alps' -> 'Alps'; unknown names are shown as they are
+    return FC_REGIONS.get(str(r).lower(),str(r)) if r else None
+
+def fc_split_model(folder):
+    # model folder name -> (model, region): 'FIN5noclim_Alps' -> ('FIN5noclim','Alps'), 'FIN2multiNoMax' -> ('FIN2multiNoMax',None)
+    for sep in ('_','-'):
+        if sep in folder:
+            head,tail=folder.rsplit(sep,1)
+            if tail.lower() in FC_REGIONS: return head,FC_REGIONS[tail.lower()]
+    return folder,None
+
+def fc_regions(runs):
+    # regions of the runs, FC_DEFAULT_REGION first
+    return sorted({r['region'] for r in runs},key=lambda x:(x!=FC_DEFAULT_REGION,x))
+
+def pick_region(runs,key):
+    # region radio when the runs hold more than one region; returns the region and the runs of that region
+    regions=fc_regions(runs)
+    if len(regions)>1:
+        if st.session_state.get(key) not in regions: st.session_state[key]=regions[0]
+        region=st.radio('region',regions,horizontal=True,key=key)
+    else:
+        region=regions[0]
+    return region,[r for r in runs if r['region']==region]
+
 @st.cache_data(ttl=60,show_spinner=False)
 def fc_runs(pdir,known=()):
-    # forecast validation runs: validation/<model>/<start date>/<prediction>/swe_metrics.csv; one run = one model and start date.
+    # forecast validation runs: validation/<model>/<start date>/<prediction>/swe_metrics.csv; one run = one model, region and start date.
     # newest start date first
-    found=[]   # (run folder, model from the folder name)
+    found=[]   # (run folder, model folder name)
     for m in fc_subdirs(pdir):
         mdir=os.path.join(pdir,m)
         if fc_pred_dirs(mdir): found.append((mdir,m))                  # old layout: validation/<model>/<prediction>/
         for d in fc_subdirs(mdir):
             if fc_pred_dirs(os.path.join(mdir,d)): found.append((os.path.join(mdir,d),m))
-    if fc_pred_dirs(pdir): found.append((pdir,FC_DEFAULT_MODEL))      # oldest layout: validation/<prediction>/
+    if fc_pred_dirs(pdir): found.append((pdir,FC_LEGACY_MODEL))      # oldest layout: validation/<prediction>/
     out=[]
-    for run,model in found:
+    for run,mfolder in found:
+        model,region=fc_split_model(mfolder)
         preds=fc_pred_dirs(run)
         info=read_json(os.path.join(run,'run_info.json'))
         bt=None
@@ -441,9 +579,9 @@ def fc_runs(pdir,known=()):
             except (ValueError,TypeError): bt=None
         if bt is None and run!=pdir: bt=fc_date_from_name(os.path.basename(run))
         if bt is None: bt=fc_base_from_scores(preds[0])
-        out.append({'run':run,'preds':preds,'base_time':bt,'model':info.get('model') or model})
+        region=fc_region_name(info.get('region')) or region or FC_DEFAULT_REGION
+        out.append({'run':run,'preds':preds,'base_time':bt,'model':MODEL_ALIASES.get(info.get('model') or model,info.get('model') or model),'region':region})
     return sorted(out,key=lambda r:r['base_time'] if r['base_time'] is not None else pd.Timestamp('1900-01-01'),reverse=True)
-
 def fc_rel(run):
     return os.path.relpath(run,PRED_DIR) if os.path.normpath(run)!=os.path.normpath(PRED_DIR) else os.path.basename(PRED_DIR.rstrip('/'))
 
@@ -487,17 +625,71 @@ def img_ratio(p,default):
     return r or default
 
 # ---------------------------------------------------------------
+# Start dates (cases) on the SWE prediction pages of the used model
+# ---------------------------------------------------------------
+def case_label(cases,region,k):
+    # '2018-01-19: level 5 snowfall, rain at lower elevations' (★ when out of the training seasons)
+    desc,out=cases.get(region,{}).get(k,('',None))
+    return k+(f': {desc}' if desc else '')+(' ★' if out else '')
+
+def region_choice(runs,cases,key):
+    # region radio over the regions with results and the regions with planned start dates; returns the region and its runs
+    regions=sorted({r['region'] for r in runs}|set(cases),key=lambda x:(x!=FC_DEFAULT_REGION,x))
+    if len(regions)>1:
+        if st.session_state.get(key) not in regions: st.session_state[key]=regions[0]
+        region=st.radio('region',regions,horizontal=True,key=key)
+    else:
+        region=regions[0]
+    return region,[r for r in runs if r['region']==region]
+
+def case_overview(cases,runs,date_key,scores,key):
+    # table of every planned start date and every start date with results, mean scores of the ens mean where run;
+    # returns {start date: run} of the start dates with results
+    by={}
+    for r in runs: by.setdefault(date_key(r),r)
+    rows=[]
+    for k in sorted(set(cases)|set(by)):
+        desc,out=cases.get(k,('',None))
+        row={'start date':k,'case':desc,'training seasons':{True:'out ★',False:'in'}.get(out,''),
+             'results':'yes' if k in by else 'not run yet'}
+        if k in by: row.update(scores(by[k]))
+        rows.append(row)
+    if not rows:
+        return by
+    t=pd.DataFrame(rows)
+    st.markdown(f"**Start dates**: {len(by)} of {len(t)} with results (★ = out of the training seasons, "
+                f"scores are means over the whole forecast of the ens mean)")
+    table(t.round(3),hide_index=True)
+    num=[c for c in t.columns if c not in ('start date','case','training seasons','results','scored') and pd.api.types.is_numeric_dtype(t[c])
+         and t[c].notna().any() and c not in ('lead days','months')]
+    if num:
+        with st.expander('scores per start date, chart',expanded=False):
+            m=st.radio('score',num,index=num.index('RMSE (mm)') if 'RMSE (mm)' in num else 0,horizontal=True,key=f'{key}_met')
+            d=t.dropna(subset=[m])
+            f=px.bar(d,x='start date',y=m,color='training seasons',hover_data=['case'],height=360,
+                     color_discrete_map={'in':'#1f77b4','out ★':'#ff7f0e','':'#b8b8b8'})
+            if 'bias' in m or 'skill' in m: f.add_hline(y=0,line_color='black',line_width=0.6)
+            f.update_layout(xaxis_type='category',legend=dict(orientation='h',y=1.1),margin=dict(t=30))
+            chart(f,key=f'{key}_chart')
+    return by
+
+# ---------------------------------------------------------------
 # Page: overview
 # ---------------------------------------------------------------
 def page_overview():
     st.title('CryoSCOPE snow water equivalent (SWE) ML model')
-    st.caption('add caption here')
+    st.markdown(OVERVIEW_INTRO)
+    st.markdown(OVERVIEW_PAGES)
+    st.divider()
+
     runs=training_runs(MOD_DIR)
     trained=list(dict.fromkeys(r['optuna_tag'] for r in runs))
+    used=used_model(trained)
+    hu=next((r for r in runs if r['optuna_tag']==used),None)
     c=st.columns(4)
     c[0].metric('training runs',len(runs))
-    c[1].metric('latest run',runs[0]['optuna_tag'] if runs else 'none')
-    c[2].metric('latest valid KGE',fmt(runs[0].get('valid_kge_all'),'{:.3f}') if runs else 'n/a')
+    c[1].metric('used model',edition_name(used) if used else f'{USED_MODEL} (not trained)')
+    c[2].metric('used model valid KGE',fmt(hu.get('valid_kge_all'),'{:.3f}') if hu else 'n/a')
     c[3].metric('validated models',f"{sum(t in VAL_BY_TAG for t in trained)} of {len(trained)}")
 
     if runs:
@@ -507,6 +699,7 @@ def page_overview():
         t=pd.DataFrame([{c:h.get(c) for c in cols} for h in runs])
         num=cols[2:]; t[num]=t[num].apply(pd.to_numeric,errors='coerce')
         t.insert(2,'independent validation',[h['optuna_tag'] in VAL_BY_TAG for h in runs])
+        t.insert(2,'used model',[h['optuna_tag']==used for h in runs])
         table(t.round(4),hide_index=True)
         tt=t.dropna(subset=['valid_rmse_all','valid_kge_all'])
         if len(tt)>1:
@@ -515,27 +708,18 @@ def page_overview():
             fig.update_traces(textposition='top center',marker=dict(size=12))
             chart(fig)
         with st.expander('features used in each training run',expanded=False):
-            used={h['stem']:run_features(h) for h in runs}
-            allf=list(dict.fromkeys(f for fs in used.values() for f in fs))
+            used_f={h['stem']:run_features(h) for h in runs}
+            allf=list(dict.fromkeys(f for fs in used_f.values() for f in fs))
             if allf:
                 m=pd.DataFrame({'feature':allf,'group':[feature_info(f)[0] for f in allf],'description':[feature_info(f)[1] for f in allf]})
-                for k,fs in used.items(): m[k]=m['feature'].isin(fs)
+                for k,fs in used_f.items(): m[k]=m['feature'].isin(fs)
                 table(m,hide_index=True,height=min(36*len(m)+40,800))
             else:
                 st.info('no feature lists stored in the hyperparams files')
 
     # independent validation of every validated model side by side; baselines are the same in every folder, shown once
-    parts=[]
-    for tag,d in VAL_BY_TAG.items():
-        v=read_csv(os.path.join(base,d,'validation_metrics.csv'))
-        if v is None: continue
-        v=v[v['subset']=='all_rows'].copy()
-        xg=~v['model'].astype(str).str.startswith('baseline_')
-        v['model']=v['model'].astype(str)
-        v.loc[xg,'model']='XGBoost '+edition_label(tag,runs)
-        parts.append(v)
-    if parts:
-        vm=pd.concat(parts,ignore_index=True).drop_duplicates(['model','domain'])
+    vm=indep_val_all(runs,'all_rows')
+    if vm is not None:
         st.subheader('Independent validation (validation locations, all rows)')
         c1,c2=st.columns(2)
         for col,m in [(c1,'RMSE'),(c2,'KGE')]:
@@ -547,29 +731,55 @@ def page_overview():
         todo=[t for t in trained if t not in VAL_BY_TAG]
         if todo: st.caption('not validated yet: '+', '.join(edition_label(t,runs) for t in todo))
 
+def indep_val_all(runs,subset):
+    # validation_metrics.csv of every validated model edition for one subset (all_rows or snow_rows), XGBoost rows named by edition
+    parts=[]
+    for tag,d in VAL_BY_TAG.items():
+        v=read_csv(os.path.join(base,d,'validation_metrics.csv'))
+        if v is None: continue
+        v=v[v['subset']==subset].copy()
+        xg=~v['model'].astype(str).str.startswith('baseline_')
+        v['model']=v['model'].astype(str)
+        v.loc[xg,'model']='XGBoost '+edition_label(tag,runs)
+        parts.append(v)
+    return pd.concat(parts,ignore_index=True).drop_duplicates(['model','domain']) if parts else None
+
 # ---------------------------------------------------------------
-# Page: training run
+# Pages: training (used model only) and training explorer (every iteration)
 # ---------------------------------------------------------------
-def page_training():
+def page_training(): training_view(explorer=False)
+def page_training_explorer(): training_view(explorer=True)
+
+def training_view(explorer):
     runs=training_runs(MOD_DIR)
     if not runs:
         st.warning(f'no hyperparams_swe_*.json in {MOD_DIR}'); return
 
-    # model edition (optuna_tag), newest first; kept in session_state so it survives page switches
+    # model edition (optuna_tag), newest first
     eds=list(dict.fromkeys(r['optuna_tag'] for r in runs))
-    keep=st.session_state.get('edition_keep')
-    ed=st.radio('model edition',eds,index=eds.index(keep) if keep in eds else 0,horizontal=True,
-                format_func=lambda t:edition_label(t,runs))
-    st.session_state['edition_keep']=ed
+    if explorer:
+        st.title('Training explorer')
+        # kept in session_state so it survives page switches
+        keep=st.session_state.get('edition_keep')
+        ed=st.radio('model edition',eds,index=eds.index(keep) if keep in eds else 0,horizontal=True,
+                    format_func=lambda t:edition_label(t,runs))
+        st.session_state['edition_keep']=ed
+    else:
+        ed=used_model(eds)
+        if ed is None:
+            st.title('Training')
+            st.warning(f'no training run of the used model {USED_MODEL} in {MOD_DIR}. Every run is on the Training explorer page.'); return
     er=[r for r in runs if r['optuna_tag']==ed]
     stem=st.selectbox('training run',[r['stem'] for r in er],key=f'run_{ed}') if len(er)>1 else er[0]['stem']
     h=next(r for r in er if r['stem']==stem)
     P=lambda name,ext='png': os.path.join(RES_DIR,f'{name}_{stem}.{ext}')
 
-    st.title(f'Training run: {edition_name(h["optuna_tag"])}')
+    if explorer: st.header(f'Training run: {edition_name(h["optuna_tag"])}')
+    else: st.title(f'Training: {edition_name(h["optuna_tag"])}')
     st.caption(f"variant {h['variant']} | domain {h['domain']} | objective {h.get('objective')} | split by {h.get('split_by','?')} | "
                f"train seasons {h.get('train_seasons','?')} | valid seasons {h.get('valid_seasons','?')} | "
-               f"{h.get('n_features','?')} features | written {h['modified']}")
+               f"{h.get('n_features','?')} features | written {h['modified']}"
+               +('' if explorer else ' | other training iterations are on the Training explorer page'))
     cards=[('valid RMSE (mm)','valid_rmse_all','{:.2f}'),('valid KGE','valid_kge_all','{:.3f}'),('valid R²','valid_r2_all','{:.3f}'),
            ('bias (mm)','valid_bias','{:+.2f}'),('RMSE snow-on (mm)','valid_rmse_snowon','{:.2f}'),('trees','n_estimators_earlystop','{}')]
     for col,(lab,k,f) in zip(st.columns(len(cards)),cards): col.metric(lab,fmt(h.get(k),f))
@@ -583,9 +793,11 @@ def page_training():
     else:
         st.info(f"no independent validation for this run yet: python xgb-validate-cryo-swe.py {h['optuna_tag']}")
 
-    tabs=st.tabs(['Features','Tuning','Fit','Feature importance','SHAP','EDA','Config','All figures','Compare editions','Training locations'])
+    names=['Features','Tuning','Fit','Feature importance','SHAP','EDA','Config','All figures']
+    names+=(['Compare editions'] if explorer else [])+['Training locations']
+    T=dict(zip(names,st.tabs(names)))
 
-    with tabs[0]:
+    with T['Features']:
         gi=read_csv(P('gain_importance','csv')); si=read_csv(P('shap_importance','csv'))
         feats=run_features(h,gi,si)
         if not feats:
@@ -621,7 +833,7 @@ def page_training():
                 fig.update_layout(yaxis={'categoryorder':'total ascending'},yaxis_title=None,margin=dict(l=0,r=10,t=40,b=0))
                 chart(fig)
 
-    with tabs[1]:
+    with T['Tuning']:
         par=read_csv(P('optuna_pareto','csv'))
         allt=load_study(optuna_db,h['study_name'],mtime(optuna_db)) if h.get('study_name') and os.path.exists(optuna_db) else None
         if par is None and allt is None:
@@ -653,7 +865,7 @@ def page_training():
                 table(par,hide_index=True)
         img(P('optuna_history'),'Optuna Pareto front and optimization history')
 
-    with tabs[2]:
+    with T['Fit']:
         c1,c2=st.columns([1,1])
         with c1: img(P('valid_scatter'),'observed vs predicted SWE, validation seasons')
         with c2:
@@ -664,7 +876,7 @@ def page_training():
                 st.markdown('**By domain**')
                 table(pd.DataFrame(h['valid_metrics_by_domain']).T.round(3))
 
-    with tabs[3]:
+    with T['Feature importance']:
         g=read_csv(P('gain_importance','csv')); s=read_csv(P('shap_importance','csv'))
         nmax=max(len(g) if g is not None else 0,len(s) if s is not None else 0,1)
         n=st.slider('features shown',5,max(5,nmax),min(25,max(5,nmax)))
@@ -674,7 +886,7 @@ def page_training():
                 if d is None: st.info(f'no {title} file')
                 else: chart(hbar(d,x,title,n))
 
-    with tabs[4]:
+    with T['SHAP']:
         st.caption('With reg:tweedie the SHAP values are in log(SWE) margin units: contributions multiply on the SWE scale.')
         c1,c2=st.columns(2)
         with c1: img(P('shap_beeswarm'),'SHAP beeswarm')
@@ -686,12 +898,12 @@ def page_training():
             for i,p in enumerate(deps):
                 with cols[i%2]: img(p,os.path.basename(p)[len('shap_dep_'):-len(f'_{stem}.png')])
 
-    with tabs[5]:
+    with T['EDA']:
         c1,c2=st.columns(2)
         with c1: img(P('eda_swe_hist'),'snow-on SWE distribution, train vs valid')
         with c2: img(P('eda_swe_seasonal'),'mean SWE by month, train vs valid')
 
-    with tabs[6]:
+    with T['Config']:
         meta={'objective','eval_metric','tree_method','num_parallel_tree','variant','domain','features','n_features',
               'split_by','snow_start_month','train_seasons','valid_seasons','tuning','rmse_tol','input_file','study_name'}
         hp={k:v for k,v in h.items() if k not in meta and not k.startswith(('valid_','chosen_','_')) and k not in ('stem','modified','optuna_tag','pareto_size','n_estimators_earlystop')}
@@ -709,94 +921,24 @@ def page_training():
         st.download_button('download hyperparams json',json.dumps({k:v for k,v in h.items() if not k.startswith('_')},indent=2),
                            file_name=os.path.basename(h['_path']),mime='application/json')
 
-    with tabs[7]:
+    with T['All figures']:
         # every figure the training script wrote for this run: results/*_<variant>_<domain>_<optuna_tag>.png
         figs=sorted(glob.glob(os.path.join(RES_DIR,f'*_{stem}.png')))
         if not figs:
             st.info(f'no figures for {stem} in {RES_DIR}')
         else:
-            names=[os.path.basename(p) for p in figs]
-            pick=st.multiselect(f'{len(figs)} figures in {RES_DIR}',names,default=names,key='train_figs')
+            fnames=[os.path.basename(p) for p in figs]
+            pick=st.multiselect(f'{len(figs)} figures in {RES_DIR}',fnames,default=fnames,key='train_figs')
             ncol=st.radio('columns',[1,2,3],index=1,horizontal=True,key='train_figs_cols')
             cols=st.columns(ncol)
             for i,p in enumerate([p for p in figs if os.path.basename(p) in pick]):
                 with cols[i%ncol]: img(p,os.path.basename(p)[:-len(f'_{stem}.png')])
 
-    with tabs[8]:
-        # newest run of each edition for the same domain as the selected run
-        seen={}
-        for r in runs:
-            if r['domain']==h['domain']: seen.setdefault(r['optuna_tag'],r)
-        pick=st.multiselect('editions to compare',list(seen),default=list(seen),
-                            format_func=lambda t:edition_label(t,runs),key='cmp_eds')
-        cmp=[seen[t] for t in pick]
-        if len(cmp)<2:
-            st.info('pick at least two editions')
-        else:
-            # scores: tuning validation seasons (same seasons for every edition) and independent locations if validated
-            rows={}
-            for r in cmp:
-                d={'features':r.get('n_features'),'trees':r.get('n_estimators_earlystop'),
-                   'tuning valid RMSE (mm)':r.get('valid_rmse_all'),'tuning valid KGE':r.get('valid_kge_all'),
-                   'tuning valid R²':r.get('valid_r2_all'),'tuning valid bias (mm)':r.get('valid_bias'),
-                   'tuning valid RMSE snow-on (mm)':r.get('valid_rmse_snowon')}
-                for dom,m in (r.get('valid_metrics_by_domain') or {}).items():
-                    d[f'tuning valid RMSE {dom}']=m.get('rmse'); d[f'tuning valid KGE {dom}']=m.get('kge')
-                rvd=val_dir_for(r['stem'])
-                rvm=read_csv(os.path.join(base,rvd,'validation_metrics.csv')) if rvd else None
-                if rvm is not None:
-                    for _,x in train_vs_indep(r,rvm).iterrows():
-                        d[f"independent RMSE {x['domain']}"]=x['RMSE independent']
-                        d[f"independent KGE {x['domain']}"]=x['KGE independent']
-                rows[edition_name(r['optuna_tag'])]=d
-            st.markdown('**Scores**')
-            table(pd.DataFrame(rows).apply(pd.to_numeric,errors='coerce').round(3))
-            missing=[edition_name(r['optuna_tag']) for r in cmp if val_dir_for(r['stem']) is None]
-            if missing:
-                st.caption('no independent validation yet for: '+', '.join(missing))
+    if explorer:
+        with T['Compare editions']:
+            compare_editions(runs,h)
 
-            # Pareto fronts on top of each other, chosen trial circled
-            fig=go.Figure()
-            for r in cmp:
-                par=read_csv(os.path.join(RES_DIR,f"optuna_pareto_{r['stem']}.csv"))
-                if par is None: continue
-                par=par.sort_values('valid_rmse')
-                fig.add_scatter(x=par['valid_rmse'],y=par['valid_kge'],mode='lines+markers',name=edition_name(r['optuna_tag']))
-                if r.get('chosen_trial_rmse') is not None:
-                    fig.add_scatter(x=[r['chosen_trial_rmse']],y=[r['chosen_trial_kge']],mode='markers',showlegend=False,
-                                    marker=dict(symbol='circle-open',size=18,color='black',line=dict(width=2)))
-            if fig.data:
-                fig.update_layout(xaxis_title='valid RMSE',yaxis_title='valid KGE',height=480,
-                                  title='Pareto fronts (circle = chosen trial)',legend=dict(orientation='h',y=1.08))
-                chart(fig,key='cmp_pareto')
-
-            # SHAP share per feature and per feature group
-            parts=[]
-            for r in cmp:
-                s=read_csv(os.path.join(RES_DIR,f"shap_importance_{r['stem']}.csv"))
-                if s is not None and s['mean_abs_shap'].sum()>0:
-                    parts.append(s.assign(**{'share %':100*s['mean_abs_shap']/s['mean_abs_shap'].sum(),
-                                             'edition':edition_name(r['optuna_tag'])}))
-            if parts:
-                imp=pd.concat(parts)
-                nf=max(6,int(imp['feature'].nunique()))
-                n=st.slider('features shown',5,nf,min(25,nf),key='cmp_n')
-                top=imp.groupby('feature')['share %'].max().nlargest(n).index
-                d=imp[imp['feature'].isin(top)]
-                order=d.groupby('feature')['share %'].max().sort_values().index.tolist()
-                f=px.bar(d,x='share %',y='feature',color='edition',barmode='group',orientation='h',height=28*len(order)+140,
-                         category_orders={'feature':order[::-1]},title='mean |SHAP| share per feature (log-SWE margin)')
-                f.update_layout(yaxis_title=None,margin=dict(l=0,r=10,t=40,b=0),legend=dict(orientation='h',y=1.04))
-                chart(f,key='cmp_shap')
-                imp['group']=imp['feature'].map(lambda x:feature_info(x)[0])
-                grp=imp.groupby(['edition','group'])['share %'].sum().reset_index()
-                f=px.bar(grp,x='share %',y='group',color='edition',barmode='group',orientation='h',
-                         height=60+45*grp['group'].nunique(),title='mean |SHAP| share per feature group')
-                f.update_layout(yaxis={'categoryorder':'total ascending'},yaxis_title=None,margin=dict(l=0,r=10,t=40,b=0))
-                chart(f,key='cmp_grp')
-                st.caption('Shares are within each edition, so MANYfeatures spreads the same total over more features.')
-
-    with tabs[9]:
+    with T['Training locations']:
         # terrain and forest of the training locations (same for every run): maps of height, slope, aspect, canopy height and histograms
         areas=[a for a in TRAIN_LOC_FIGS if glob.glob(os.path.join(base,TRAIN_LOC_FIGS[a]+'_*.png'))]
         if not areas:
@@ -822,19 +964,119 @@ def page_training():
                 for k,c in TRAIN_LOC_KINDS:
                     if not k.startswith('map_') and os.path.exists(f'{pre}_{k}.png'): img(f'{pre}_{k}.png',f'{area}: {c}')
 
+def compare_editions(runs,h):
+    # newest run of each edition for the same domain as the selected run
+    seen={}
+    for r in runs:
+        if r['domain']==h['domain']: seen.setdefault(r['optuna_tag'],r)
+    eds=prod_first(seen)
+    pick=st.multiselect('editions to compare',eds,default=eds,format_func=lambda t:edition_label(t,runs),key='cmp_eds')
+    cmp=[seen[t] for t in pick]
+    if len(cmp)<2:
+        st.info('pick at least two editions'); return
+    # scores: tuning validation seasons (same seasons for every edition) and independent locations if validated
+    rows={}
+    for r in cmp:
+        d={'features':r.get('n_features'),'trees':r.get('n_estimators_earlystop'),
+           'tuning valid RMSE (mm)':r.get('valid_rmse_all'),'tuning valid KGE':r.get('valid_kge_all'),
+           'tuning valid R²':r.get('valid_r2_all'),'tuning valid bias (mm)':r.get('valid_bias'),
+           'tuning valid RMSE snow-on (mm)':r.get('valid_rmse_snowon')}
+        for dom,m in (r.get('valid_metrics_by_domain') or {}).items():
+            d[f'tuning valid RMSE {dom}']=m.get('rmse'); d[f'tuning valid KGE {dom}']=m.get('kge')
+        rvd=val_dir_for(r['stem'])
+        rvm=read_csv(os.path.join(base,rvd,'validation_metrics.csv')) if rvd else None
+        if rvm is not None:
+            for _,x in train_vs_indep(r,rvm).iterrows():
+                d[f"independent RMSE {x['domain']}"]=x['RMSE independent']
+                d[f"independent KGE {x['domain']}"]=x['KGE independent']
+        rows[edition_name(r['optuna_tag'])]=d
+    st.markdown('**Scores**')
+    table(pd.DataFrame(rows).apply(pd.to_numeric,errors='coerce').round(3))
+    missing=[edition_name(r['optuna_tag']) for r in cmp if val_dir_for(r['stem']) is None]
+    if missing:
+        st.caption('no independent validation yet for: '+', '.join(missing))
+
+    # Pareto fronts on top of each other, chosen trial circled
+    fig=go.Figure()
+    for r in cmp:
+        par=read_csv(os.path.join(RES_DIR,f"optuna_pareto_{r['stem']}.csv"))
+        if par is None: continue
+        par=par.sort_values('valid_rmse')
+        fig.add_scatter(x=par['valid_rmse'],y=par['valid_kge'],mode='lines+markers',name=edition_name(r['optuna_tag']))
+        if r.get('chosen_trial_rmse') is not None:
+            fig.add_scatter(x=[r['chosen_trial_rmse']],y=[r['chosen_trial_kge']],mode='markers',showlegend=False,
+                            marker=dict(symbol='circle-open',size=18,color='black',line=dict(width=2)))
+    if fig.data:
+        fig.update_layout(xaxis_title='valid RMSE',yaxis_title='valid KGE',height=480,
+                          title='Pareto fronts (circle = chosen trial)',legend=dict(orientation='h',y=1.08))
+        chart(fig,key='cmp_pareto')
+
+    # SHAP share per feature and per feature group
+    parts=[]
+    for r in cmp:
+        s=read_csv(os.path.join(RES_DIR,f"shap_importance_{r['stem']}.csv"))
+        if s is not None and s['mean_abs_shap'].sum()>0:
+            parts.append(s.assign(**{'share %':100*s['mean_abs_shap']/s['mean_abs_shap'].sum(),
+                                     'edition':edition_name(r['optuna_tag'])}))
+    if parts:
+        imp=pd.concat(parts)
+        nf=max(6,int(imp['feature'].nunique()))
+        n=st.slider('features shown',5,nf,min(25,nf),key='cmp_n')
+        top=imp.groupby('feature')['share %'].max().nlargest(n).index
+        d=imp[imp['feature'].isin(top)]
+        order=d.groupby('feature')['share %'].max().sort_values().index.tolist()
+        f=px.bar(d,x='share %',y='feature',color='edition',barmode='group',orientation='h',height=28*len(order)+140,
+                 category_orders={'feature':order[::-1]},title='mean |SHAP| share per feature (log-SWE margin)')
+        f.update_layout(yaxis_title=None,margin=dict(l=0,r=10,t=40,b=0),legend=dict(orientation='h',y=1.04))
+        chart(f,key='cmp_shap')
+        imp['group']=imp['feature'].map(lambda x:feature_info(x)[0])
+        grp=imp.groupby(['edition','group'])['share %'].sum().reset_index()
+        f=px.bar(grp,x='share %',y='group',color='edition',barmode='group',orientation='h',
+                 height=60+45*grp['group'].nunique(),title='mean |SHAP| share per feature group')
+        f.update_layout(yaxis={'categoryorder':'total ascending'},yaxis_title=None,margin=dict(l=0,r=10,t=40,b=0))
+        chart(f,key='cmp_grp')
+        st.caption('Shares are within each edition, so MANYfeatures spreads the same total over more features.')
+
 # ---------------------------------------------------------------
-# Page: validation
+# Pages: validation (used model only) and validation explorer (every iteration)
 # ---------------------------------------------------------------
+VAL_VIEWS=['Scores and figures','Location time series and maps']
+VAL_ALL='All iterations compared'
+
 def page_validation():
+    runs,tags,todo=val_models()
+    tag=used_model(tags)
+    if tag is None:
+        st.title('Validation')
+        st.warning(f'no independent validation of the used model {USED_MODEL} yet (validationresults_<tag>/ with validation_metrics.csv in {base})')
+        st.code(f'python xgb-validate-cryo-swe.py {USED_MODEL}',language='bash')
+        return
+    use_val(VAL_BY_TAG[tag])
+    st.title(f'Validation: {edition_name(tag)}')
+    view=st.radio('view',VAL_VIEWS,horizontal=True,key='val_view')
+    st.caption('Other iterations are on the Validation explorer page.')
+    if view==VAL_VIEWS[0]: val_results(tag)
+    else: val_locations(tag)
+
+def page_validation_explorer():
+    st.title('Validation explorer')
+    view=st.radio('view',VAL_VIEWS+[VAL_ALL],horizontal=True,key='valx_view')
+    if view==VAL_ALL:
+        val_iterations(); return
     tag=pick_val_model()
     if tag is None: return
+    st.header(edition_name(tag))
+    if view==VAL_VIEWS[0]: val_results(tag)
+    else: val_locations(tag)
+
+def val_results(tag):
+    # scores, maps, monthly, snow season and figures of one validated model edition (VAL_DIR set by use_val)
     vpath=os.path.join(VAL_DIR,'validation_metrics.csv')
     vm=read_csv(vpath)
     if vm is None:
         st.warning(f'no validation_metrics.csv in {VAL_DIR}'); return
-    st.title(f'Independent validation: {edition_name(tag)}')
     info=read_json(os.path.join(VAL_DIR,'run_info.json'))
-    st.caption(f'validation locations not used in training | results in {VAL_DIR} | written {stamp(vpath)}'
+    st.caption(f'independent validation, validation locations not used in training | results in {VAL_DIR} | written {stamp(vpath)}'
                + (f" | model from training run {info['training_stem']}" if info.get('training_stem') else '')
                + (' | validation still running or interrupted, results incomplete' if info.get('complete') is False else ''))
 
@@ -1002,23 +1244,58 @@ def page_validation():
             # start with the domain picked in 'evaluated on' above, both for 'all'
             a=st.radio('area',opts,index=opts.index(dom) if dom in opts else len(opts)-1,horizontal=True,key=f'valloc_area_{dom}')
             st.caption('Locations used for the independent validation, never used in training. '
-                       'The terrain of the training locations is on the Training run page, tab Training locations.')
+                       'The terrain of the training locations is on the Training page, tab Training locations.')
             show=areas if a=='both side by side' else [a]
             for col,x in zip(st.columns(len(show)),show):
                 with col: img(os.path.join(base,VAL_LOC_FIGS[x]),f'{x}: validation locations')
 
+def val_iterations():
+    # every validated model edition side by side: independent scores per domain and monthly scores
+    runs=training_runs(MOD_DIR)
+    if not VAL_BY_TAG:
+        st.info(f'no validationresults_<tag>/ folders with validation_metrics.csv in {base}'); return
+    c1,c2=st.columns(2)
+    subset=c1.radio('rows',['all_rows','snow_rows'],horizontal=True,key='valx_cmp_rows',
+                    format_func=lambda s:'all rows' if s=='all_rows' else 'snow rows (obs or pred > 0)')
+    vm=indep_val_all(runs,subset)
+    if vm is None:
+        st.info('no readable validation_metrics.csv'); return
+    mets=[m for m in ['RMSE','ubRMSE','MAE','ME','R2','KGE','pearson_r','std_ratio','POD','FAR','CSI','HSS'] if m in vm]
+    met=c2.selectbox('score',mets,index=mets.index('RMSE') if 'RMSE' in mets else 0,key='valx_cmp_met')
+    st.markdown(f'**{met}, independent validation locations** (baselines shown once)')
+    table(vm.pivot_table(index='model',columns='domain',values=met).round(3))
+    f=px.bar(vm,x='domain',y=met,color='model',barmode='group',height=420,labels={'model':''})
+    if met=='ME': f.add_hline(y=0,line_color='black',line_width=0.6)
+    chart(f.update_layout(legend=dict(orientation='h',y=-0.25)),key='valx_cmp_bar')
+
+    # monthly scores of every edition (XGBoost rows only)
+    parts=[]
+    for tag,d in VAL_BY_TAG.items():
+        mt=read_csv(os.path.join(base,d,'validation_metrics_monthly.csv'))
+        if mt is None or met not in mt: continue
+        mt=mt[~mt['model'].astype(str).str.startswith('baseline_')]
+        parts.append(mt.assign(edition=edition_label(tag,runs)))
+    if parts:
+        mm=pd.concat(parts,ignore_index=True)
+        mm['mon']=mm['month'].astype(int).map(MONTH_NAMES)
+        f=px.line(mm,x='mon',y=met,color='edition',facet_col='domain',markers=True,height=400,
+                  category_orders={'mon':[MONTH_NAMES[m] for m in SEASON_MONTHS]},title=f'monthly {met}, all rows',
+                  labels={'mon':'month','edition':''})
+        f.for_each_annotation(lambda a:a.update(text=a.text.split('=')[-1]))
+        f.update_layout(legend=dict(orientation='h',y=-0.2))
+        chart(f,key='valx_cmp_monthly')
+    runs_todo=[t for t in dict.fromkeys(r['optuna_tag'] for r in runs) if t not in VAL_BY_TAG]
+    if runs_todo: st.caption('not validated yet: '+', '.join(edition_label(t,runs) for t in runs_todo))
+
 # ---------------------------------------------------------------
-# Page: validation explorer (every validation row: observed, XGBoost and baselines)
+# Location time series and maps (every validation row: observed, XGBoost and baselines)
 # ---------------------------------------------------------------
 def set_loc(lt,lat,lon): st.session_state['loc']=nearest(lt,lat,lon)
 
-def page_predictions():
-    tag=pick_val_model()
-    if tag is None: return
+def val_locations(tag):
     files=sorted(glob.glob(os.path.join(VAL_DIR,'SWE_xgboost_validation_*model.csv.gz')))
     if not files:
         st.warning(f'no SWE_xgboost_validation_*model.csv.gz in {VAL_DIR}. Set save_predictions=True in xgb-validate-cryo-swe.py to write it.'); return
-    st.title(f'Validation explorer: {edition_name(tag)}')
     f=files[0] if len(files)==1 else st.selectbox('prediction file',files,format_func=os.path.basename)
     mt=mtime(f)
     df=load_pred(f,mt); lt=loc_table(f,mt)
@@ -1111,39 +1388,70 @@ def page_predictions():
         chart(fig)
 
 # ---------------------------------------------------------------
-# Page: SWE predictions (ECXENS forecasts validated against HKL, figures and scores from the forecast validation script)
+# Pages: SWE prediction 10 / 15 days (used model, divided by start date) and compare SWE predictions 10 / 15 days (every model)
+# ECXENS forecasts validated against HKL, figures and scores from the forecast validation script
 # ---------------------------------------------------------------
-def page_forecasts():
-    st.title('SWE predictions')
-    known=tuple(sorted(set(EDITION_NAMES)|{h['optuna_tag'] for h in training_runs(MOD_DIR)}))
-    runs=fc_runs(PRED_DIR,known)
-    if not runs:
-        st.warning(f'no forecast validation results in {PRED_DIR}')
-        st.markdown('Copy the output of the forecast validation script here as `<model>/<start date>/<prediction>/`, '
-                    'for example `FINmulti/20230210/wettest/` with `swe_metrics.csv` and the png figures in each prediction folder:')
-        st.code(f'rsync -av smartmet@smart.nsdc.fmi.fi:/home/users/smartmet/data/ec-ens/validation/figs_swe_validation/ {PRED_DIR}/',language='bash')
-        return
+def fc_no_runs():
+    st.markdown('Copy the output of the forecast validation script here as `<model>/<start date>/<prediction>/`, '
+                'for example `FIN5/20180119/ensmean/` (Alps: `FIN5_Alps/20180119/ensmean/`) with `swe_metrics.csv` '
+                'and the png figures in each prediction folder:')
+    st.code(f'rsync -av smartmet@smart.nsdc.fmi.fi:/home/users/smartmet/data/ec-ens/validation/figs_swe_validation/ {PRED_DIR}/',language='bash')
 
-    # ---- model edition, then start date (forecast base time) of that model; both kept when switching pages
-    models=sorted({r['model'] for r in runs},key=lambda m:(m!=FC_DEFAULT_MODEL,m))
+def fc_case_scores(r):
+    # mean scores over all lead days of the ens mean (or the first prediction) of one run, for the start date table
+    p=next((p for p in r['preds'] if os.path.basename(p)=='ensmean'),r['preds'][0])
+    d=read_csv(os.path.join(p,'swe_metrics.csv'))
+    if d is None: return {}
+    out={'scored':fc_pred_label(os.path.basename(p)),'lead days':len(d)}
+    for k,l in [('bias','bias (mm)'),('rmse','RMSE (mm)'),('kge','KGE'),('csi_1','CSI 1 mm'),('skill_mse_vs_ecens','MSE skill vs ECENS')]:
+        if k in d: out[l]=d[k].mean()
+    return out
+
+def page_forecasts():
+    st.title('SWE prediction 10 / 15 days (ECXENS)')
+    allruns=fc_runs(PRED_DIR)
+    model=used_model(prod_first({r['model'] for r in allruns})) or USED_MODEL
+    runs=[r for r in allruns if r['model']==model]
+    region,runs=region_choice(runs,FC_CASES,'fc_region_sel')
+    st.caption(f'model {edition_name(model)} only, one ECXENS run per start date (00 UTC, 1 to 3 days before the event). '
+               'Other model editions are on the Compare SWE predictions 10 / 15 days page.')
+    by=case_overview(FC_CASES.get(region,{}),runs,fc_date_key,fc_case_scores,key=f'fc_cases_{region}')
+    if not by:
+        st.info(f'no {edition_name(model)} results for {region} in {PRED_DIR} yet'); fc_no_runs(); return
+    keys=sorted(by)
+    skey=f'fc_case_sel_{region}'
+    if st.session_state.get(skey) not in keys: st.session_state[skey]=keys[0]
+    k=st.selectbox('start date',keys,key=skey,format_func=lambda x:case_label(FC_CASES,region,x))
+    st.divider()
+    st.header(case_label(FC_CASES,region,k))
+    fc_run_view(by[k],region,model)
+
+def fc_detail_any(runs,region):
+    # one model in detail, any model edition and start date (the compare page)
+    models=prod_first({r['model'] for r in runs})
     nstart={m:sum(r['model']==m for r in runs) for m in models}
     # widgets with fixed keys: their value lives in session_state, so a pick is never reset by a changing default
-    if st.session_state.get('fc_model_sel') not in models:
-        ed=st.session_state.get('edition_keep')   # default: edition picked on the Training run page
-        st.session_state['fc_model_sel']=ed if ed in models else models[0]
+    mkey=f'fc_model_sel_{region}'   # one model choice per region
+    if st.session_state.get(mkey) not in models:
+        st.session_state[mkey]=default_model(models)
     c1,c2=st.columns([2,3])
     with c1:
-        model=st.radio('model',models,horizontal=True,key='fc_model_sel',
+        model=st.radio('model',models,horizontal=True,key=mkey,
                        format_func=lambda m:f'{edition_name(m)} ({nstart[m]} start date{"s" if nstart[m]!=1 else ""})')
     runs=[r for r in runs if r['model']==model]
     paths=[r['run'] for r in runs]
-    skey=f'fc_run_sel_{model}'   # one start date choice per model
+    skey=f'fc_run_sel_{region}_{model}'   # one start date choice per region and model
     if st.session_state.get(skey) not in paths: st.session_state[skey]=paths[0]
+    def lab(p):
+        r=next(r for r in runs if r['run']==p)
+        return case_label(FC_CASES,region,fc_date_key(r))+f"  ({fc_rel(r['run'])}, {len(r['preds'])} predictions)"
     with c2:
-        run_path=st.selectbox('start date',paths,key=skey,
-                              format_func=lambda p:fc_run_label(next(r for r in runs if r['run']==p)))
-    R=next(r for r in runs if r['run']==run_path)
-    preds,base_time=R['preds'],R['base_time']
+        run_path=st.selectbox('start date',paths,key=skey,format_func=lab)
+    fc_run_view(next(r for r in runs if r['run']==run_path),region,model)
+
+def fc_run_view(R,region,model):
+    # daily maps, scores, summaries, members and figures of one forecast run (one model, region and start date)
+    run_path,preds,base_time=R['run'],R['preds'],R['base_time']
     df=fc_metrics(preds)
     if df is None:
         st.warning('no readable swe_metrics.csv in this run'); return
@@ -1154,8 +1462,8 @@ def page_forecasts():
         st.warning(f"`{fc_rel(run_path)}` says start date {base_time:%Y-%m-%d}, but its swe_metrics.csv has dates "
                    f"{df['date'].min():%Y-%m-%d} to {df['date'].max():%Y-%m-%d} (start {bt_scores:%Y-%m-%d}): "
                    "these files come from another forecast run, check what was copied into this folder")
-    st.caption(f"model {edition_name(model)} | start {fc_run_label(R).split('  (')[0]} | {', '.join(names)} | {df['date'].min():%Y-%m-%d} to {df['date'].max():%Y-%m-%d} | reference HKL SWE | "
-               f"bias is ECXENS minus HKL | written {stamp(os.path.join(preds[0],'swe_metrics.csv'))}")
+    st.caption(f"region {region} | model {edition_name(model)} | start {fc_run_label(R).split('  (')[0]} | {', '.join(names)} | {df['date'].min():%Y-%m-%d} to {df['date'].max():%Y-%m-%d} | reference HKL SWE | "
+               f"bias is ECXENS minus HKL | {fc_rel(run_path)} | written {stamp(os.path.join(preds[0],'swe_metrics.csv'))}")
 
     # ---- daily maps first: per prediction raw ECENS, ECXENS, HKL (one figure) and ECXENS minus HKL
     st.subheader('Daily maps')
@@ -1193,8 +1501,15 @@ def page_forecasts():
             extra=[os.path.join(p,f'{n}_{day}.png') for n in ('swe_ecens_bias','swe_bias_gain')]
             extra=[x for x in extra if os.path.exists(x)] or [x for x in [os.path.join(p,f'swe_ecx_minus_ecens_{day}.png')] if os.path.exists(x)]
             row+=extra
-            for col,fp in zip(st.columns([img_ratio(fp,d) for fp,d in zip(row,[17.7/8]+[7/8]*(len(row)-1))]),row):
-                with col: img(fp)
+            ratios=[img_ratio(fp,d) for fp,d in zip(row,[17.7/8]+[7/8]*(len(row)-1))]
+            if len(row)>1 and sum(ratios)>6:
+                # wide domains (Alps, landscape figures): comparison on its own row, the bias maps side by side below it
+                img(row[0])
+                for col,fp in zip(st.columns(ratios[1:]),row[1:]):
+                    with col: img(fp)
+            else:
+                for col,fp in zip(st.columns(ratios),row):
+                    with col: img(fp)
 
     # ---- everything else below the maps
     st.divider()
@@ -1328,9 +1643,6 @@ def page_forecasts():
         table(show.round(4),hide_index=True)
         st.download_button('download scores (csv)',show.to_csv(index=False),file_name=f'swe_metrics_{fc_rel(run_path).replace(os.sep,"_")}.csv',mime='text/csv')
 
-# ---------------------------------------------------------------
-# Page: compare SWE models (raw ECENS, ECXENS of each model edition, HKL side by side for one start date and day)
-# ---------------------------------------------------------------
 def fc_pred_label(lab):
     if lab in FC_NAMES: return FC_NAMES[lab].replace('ECXENS ','')
     if lab.startswith('member') and lab[6:].isdigit(): return f'member {int(lab[6:])}'
@@ -1339,22 +1651,29 @@ def fc_pred_label(lab):
 def fc_date_key(r):
     return f"{r['base_time']:%Y-%m-%d}" if r['base_time'] is not None else os.path.basename(r['run'].rstrip('/'))
 
+CMP_VIEWS=['Models side by side','One model in detail']
+
 def page_compare():
-    st.title('Compare SWE models')
+    st.title('Compare SWE predictions 10 / 15 days (ECXENS)')
     runs=fc_runs(PRED_DIR)
     if not runs:
-        st.warning(f'no forecast validation results in {PRED_DIR}'); return
+        st.warning(f'no forecast validation results in {PRED_DIR}'); fc_no_runs(); return
+    view=st.radio('view',CMP_VIEWS,horizontal=True,key='cmpm_view')
+    region,runs=pick_region(runs,'cmpm_region_sel')
+    if view==CMP_VIEWS[1]:
+        fc_detail_any(runs,region); return
     st.caption('Raw ECENS, the ECXENS forecast of each model edition and HKL (Snowcap) for the same start date, prediction and day. '
                'Every map uses the same SWE legend and the same area.')
 
     # ---- start date, models with that start date, prediction shared by all picked models
     keys=sorted({fc_date_key(r) for r in runs},reverse=True)
-    c1,c2,c3=st.columns([1,3,1])
-    key=c1.selectbox('start date',keys,key='cmpm_date')
+    c1,c2,c3=st.columns([2,3,1])
+    key0=c1.selectbox('start date',keys,key=f'cmpm_date_{region}',format_func=lambda x:case_label(FC_CASES,region,x))
+    key=f'{region}_{key0}'   # widget keys below are per region and start date
     by_model={}
     for r in runs:
-        if fc_date_key(r)==key: by_model.setdefault(r['model'],r)
-    models=sorted(by_model,key=lambda m:(m!=FC_DEFAULT_MODEL,m))
+        if fc_date_key(r)==key0: by_model.setdefault(r['model'],r)
+    models=prod_first(by_model)
     pick=c2.multiselect('models',models,default=models,format_func=edition_name,key=f'cmpm_models_{key}')
     if not pick:
         st.info('pick at least one model'); return
@@ -1452,9 +1771,408 @@ def page_compare():
     f.update_traces(selector=dict(name='raw ECENS'),line=dict(dash='dash',color='gray'))
     chart(f,key='cmpm_lead')
 
+    # ---- every start date both models have: mean scores model against model
+    with st.expander('all start dates, model against model (means over all lead days of this prediction)',expanded=False):
+        rows=[]
+        for r in runs:
+            if r['model'] not in pick: continue
+            p=os.path.join(r['run'],pred)
+            d=read_csv(os.path.join(p,'swe_metrics.csv'))
+            if d is None or met not in d: continue
+            rows.append({'start date':fc_date_key(r),'model':edition_name(r['model']),FC_METRICS[met][0]:d[met].mean()})
+        if rows:
+            t=pd.DataFrame(rows)
+            table(t.pivot_table(index='start date',columns='model',values=FC_METRICS[met][0]).round(3))
+            f=px.bar(t,x='start date',y=FC_METRICS[met][0],color='model',barmode='group',height=360)
+            f.update_layout(xaxis_type='category',legend=dict(orientation='h',y=1.1),margin=dict(t=30))
+            chart(f,key='cmpm_alldates')
+
 # ---------------------------------------------------------------
-{'Overview':page_overview,'Training run':page_training,'Validation':page_validation,'Validation explorer':page_predictions,
- 'SWE predictions':page_forecasts,'Compare SWE models':page_compare}[page]()
+# Seasonal pages: ECXSF monthly means validated against HKL, figures and scores from swe-seasonal-validation.py
+# layout: validation_sf/<model>/<start date>/<prediction>/ with swe_metrics_monthly.csv and the png figures, run_info.json
+#         (model, base_time, region) in <start date>/, e.g. validation_sf/FIN5/20231101/ensmean/
+# one start date per model still works: validation_sf/<model>/<prediction>/ with run_info.json in <model>/
+# folder names map to model editions with MODEL_ALIASES; a region suffix on the model folder (FIN5_Alps) gives the region
+# ---------------------------------------------------------------
+SF_ORDER=['ensmean','member00']
+SF_NAMES={'ensmean':'ECXSF ens mean'}
+SF_FIELDS=[('ecsf','raw ECSF sd (1°, own area)'),('ecxsf','ECXSF SWE (own grid and area)'),('hkl','HKL SWE (own grid and area)')]
+SF_BIAS=[('bias_ecxsf_hkl','ECXSF minus HKL (ECXSF grid)'),('bias_ecsf_hkl','ECSF minus HKL (1° grid)')]
+SF_SOURCES={'ecx':'ECXSF (own grid)','ecx1':'ECXSF (1° cells)','ecsf':'ECSF raw (1° cells)'}
+# scores in swe_metrics_monthly.csv (with a source prefix ecx_, ecx1_, ecsf_); 'mean' is the mean SWE, written also without HKL
+SF_METRICS=dict(FC_METRICS,mean=('mean SWE','mm'))
+def sf_has_hkl(df): return df is not None and 'ecx_bias' in df and df['ecx_bias'].notna().any()
+def sf_metric_opts(df): return [m for m in SF_METRICS if f'ecx_{m}' in df and df[f'ecx_{m}'].notna().any()]
+
+def sf_sort_key(p):
+    lab=os.path.basename(p.rstrip('/'))
+    return (SF_ORDER.index(lab) if lab in SF_ORDER else len(SF_ORDER),lab)
+
+def sf_name(p):
+    # pred_info.json written by the seasonal validation script, then SF_NAMES, then member<N> -> 'ECXSF member N'
+    name=read_json(os.path.join(p,'pred_info.json')).get('name')
+    if name: return name
+    lab=os.path.basename(p.rstrip('/'))
+    if lab in SF_NAMES: return SF_NAMES[lab]
+    if lab.startswith('member') and lab[6:].isdigit(): return f'ECXSF member {int(lab[6:])}'
+    return lab
+
+def sf_short(lab):
+    if lab=='ensmean': return 'ens mean'
+    if lab.startswith('member') and lab[6:].isdigit(): return f'member {int(lab[6:])}'
+    return lab
+
+@st.cache_data(ttl=60,show_spinner=False)
+def sf_runs(sdir):
+    # every folder with swe_metrics_monthly.csv is a prediction; predictions with the same parent folder form one run
+    sdir=os.path.normpath(sdir)
+    if not os.path.isdir(sdir): return []
+    preds=[]
+    for root,dirs,files in os.walk(sdir):
+        dirs[:]=sorted(d for d in dirs if d not in FC_SKIP_DIRS and not d.startswith('.'))
+        if os.path.relpath(root,sdir).count(os.sep)>=4: dirs[:]=[]
+        if 'swe_metrics_monthly.csv' in files: preds.append(os.path.normpath(root))
+    runs={}
+    for p in preds:
+        par=os.path.dirname(p)
+        run=par if (p!=sdir and par!=sdir) else p   # <model>/<prediction>/ and <model>/<start date>/<prediction>/ both group by parent
+        runs.setdefault(run,[]).append(p)
+    out=[]
+    for run,ps in runs.items():
+        ps=sorted(ps,key=sf_sort_key)
+        info=read_json(os.path.join(run,'run_info.json'))
+        bt=None
+        if info.get('base_time'):
+            try: bt=pd.Timestamp(info['base_time'])
+            except (ValueError,TypeError): bt=None
+        if bt is None: bt=fc_date_from_name(os.path.basename(run))
+        if bt is None:   # first month minus (lead month - 1)
+            try:
+                d=pd.read_csv(os.path.join(ps[0],'swe_metrics_monthly.csv'),usecols=['month','lead_month']).iloc[0]
+                bt=pd.Timestamp(f"{d['month']}-01")-pd.DateOffset(months=int(d['lead_month'])-1)
+            except Exception: bt=None
+        rp=os.path.dirname(run)
+        if info.get('model'): mfolder=info['model']
+        elif run==sdir: mfolder='ECXSF'
+        elif rp==sdir: mfolder=os.path.basename(run)   # validation_sf/FIN5/ensmean/
+        else: mfolder=os.path.basename(rp)              # validation_sf/FIN5/20231101/ensmean/
+        model,region=fc_split_model(mfolder)
+        model=MODEL_ALIASES.get(model,model)
+        region=fc_region_name(info.get('region')) or region or FC_DEFAULT_REGION
+        out.append({'run':run,'preds':ps,'base_time':bt,'model':model,'region':region})
+    return sorted(out,key=lambda r:r['base_time'] if r['base_time'] is not None else pd.Timestamp('1900-01-01'),reverse=True)
+
+def sf_rel(run):
+    return os.path.relpath(run,SF_DIR) if os.path.normpath(run)!=os.path.normpath(SF_DIR) else os.path.basename(SF_DIR.rstrip('/'))
+
+def sf_date_key(r):
+    return f"{r['base_time']:%Y-%m-%d}" if r['base_time'] is not None else sf_rel(r['run'])
+
+def sf_metrics(preds):
+    parts=[]
+    for p in preds:
+        d=read_csv(os.path.join(p,'swe_metrics_monthly.csv'))
+        if d is not None: parts.append(d.assign(pred=os.path.basename(p),name=sf_name(p)))
+    return pd.concat(parts,ignore_index=True) if parts else None
+
+def sf_months(folders):
+    # forecast months (YYYYMM) that have the ECXSF map in every folder
+    out=None
+    for p in folders:
+        m={os.path.basename(f)[len('ecxsf_'):-4] for f in glob.glob(os.path.join(p,'ecxsf_*.png'))}
+        out=m if out is None else out&m
+    return sorted(out or [])
+
+def sf_month_label(m,bt):
+    t=pd.Timestamp(f'{m[:4]}-{m[4:]}-01')
+    if bt is None: return f'{t:%Y-%m}'
+    return f'{t:%Y-%m} (lead month {(t.year-bt.year)*12+t.month-bt.month+1})'
+
+def sf_no_runs():
+    st.markdown('Copy the output of `swe-seasonal-validation.py` here as `<model>/<start date>/<prediction>/`, for example '
+                '`FIN5/20231101/ensmean/` (Alps: `FIN5_Alps/20231101/ensmean/`):')
+    st.code(f'rsync -av ubuntu@smartmet-destine:/home/ubuntu/data/snowmodel_validation/figs_swe_seasonal/ {SF_DIR}/',language='bash')
+
+def img_row(paths,default_ratio=0.9):
+    # images side by side with the same height (column widths follow the png aspect ratios); missing pngs are left out
+    paths=[(p,c) for p,c in paths if os.path.exists(p)]
+    if not paths: return
+    for col,(p,cap) in zip(st.columns([img_ratio(p,default_ratio) for p,_ in paths]),paths):
+        with col:
+            if cap: st.markdown(f'**{cap}**')
+            img(p)
+
+def sf_case_scores(r):
+    # mean scores over all forecast months of the ens mean (or the first prediction) of one run, for the start date table
+    p=next((p for p in r['preds'] if os.path.basename(p)=='ensmean'),r['preds'][0])
+    d=read_csv(os.path.join(p,'swe_metrics_monthly.csv'))
+    if d is None: return {}
+    out={'scored':sf_short(os.path.basename(p)),'months':len(d)}
+    for k,l in [('ecx_mean','mean SWE (mm)'),('ecx_bias','bias (mm)'),('ecx_rmse','RMSE (mm)'),('ecx_kge','KGE'),('skill_mse_vs_ecsf','MSE skill vs ECSF')]:
+        if k in d: out[l]=d[k].mean()
+    out['HKL']='yes' if sf_has_hkl(d) else 'no'
+    return out
+
+def page_seasonal():
+    st.title('SWE prediction seasonal (ECXSF)')
+    allruns=sf_runs(SF_DIR)
+    model=used_model(prod_first({r['model'] for r in allruns})) or USED_MODEL
+    runs=[r for r in allruns if r['model']==model]
+    region,runs=region_choice(runs,SF_CASES,'sf_region_sel')
+    st.caption(f'model {edition_name(model)} only, one ECXSF run (215 days, monthly means) per start date. '
+               'Other model editions are on the Compare SWE predictions seasonal page.')
+    by=case_overview(SF_CASES.get(region,{}),runs,sf_date_key,sf_case_scores,key=f'sf_cases_{region}')
+    if not by:
+        st.info(f'no {edition_name(model)} seasonal results for {region} in {SF_DIR} yet'); sf_no_runs(); return
+    keys=sorted(by)
+    skey=f'sf_case_sel_{region}'
+    if st.session_state.get(skey) not in keys: st.session_state[skey]=keys[0]
+    k=st.selectbox('start date',keys,key=skey,format_func=lambda x:case_label(SF_CASES,region,x))
+    st.divider()
+    st.header(case_label(SF_CASES,region,k))
+    sf_run_view(by[k],region,model)
+
+def sf_detail_any(runs,region):
+    # one model in detail, any model edition and start date (the compare page)
+    models=prod_first({r['model'] for r in runs})
+    nstart={m:sum(r['model']==m for r in runs) for m in models}
+    mkey=f'sf_model_pick_{region}'
+    if st.session_state.get(mkey) not in models:
+        st.session_state[mkey]=default_model(models)
+    c1,c2=st.columns([2,3])
+    with c1:
+        model=st.radio('model',models,horizontal=True,key=mkey,
+                       format_func=lambda m:f'{edition_name(m)} ({nstart[m]} start date{"s" if nstart[m]!=1 else ""})')
+    runs=[r for r in runs if r['model']==model]
+    paths=[r['run'] for r in runs]
+    skey=f'sf_run_sel_{region}_{model}'
+    if st.session_state.get(skey) not in paths: st.session_state[skey]=paths[0]
+    def lab(p):
+        r=next(r for r in runs if r['run']==p)
+        return case_label(SF_CASES,region,sf_date_key(r))+f"  ({sf_rel(r['run'])}, {len(r['preds'])} predictions)"
+    with c2:
+        run_path=st.selectbox('start date',paths,key=skey,format_func=lab)
+    sf_run_view(next(r for r in runs if r['run']==run_path),region,model)
+
+def sf_run_view(R,region,model):
+    # monthly maps, scores and figures of one seasonal run (one model, region and start date)
+    run_path,preds,bt=R['run'],R['preds'],R['base_time']
+    df=sf_metrics(preds)
+    if df is None:
+        st.warning('no readable swe_metrics_monthly.csv in this run'); return
+    hkl=sf_has_hkl(df)
+    st.caption(f"region {region} | model {edition_name(model)} | start {sf_date_key(R)} | {', '.join(sf_name(p) for p in preds)} | "
+               f"months {df['month'].min()} to {df['month'].max()} | monthly means | "
+               +("reference HKL SWE | bias is forecast minus HKL, HKL averaged into the forecast cells" if hkl else "no HKL for this run, forecast only")
+               +f" | {sf_rel(run_path)} | written {stamp(os.path.join(preds[0],'swe_metrics_monthly.csv'))}")
+    if not hkl:
+        st.info('No HKL SWE for this start date: the validation script wrote the forecast maps and mean SWE only, no HKL comparison.')
+
+    # ---- monthly maps: raw ECSF, ECXSF and HKL on their own grids, then the two bias maps
+    st.subheader('Monthly maps')
+    months=sorted({m for p in preds for m in sf_months([p])})
+    if not months:
+        st.info('no ecxsf_YYYYMM.png figures in this run')
+    else:
+        c1,c2=st.columns([3,2])
+        if len(months)>1:
+            mon=c1.select_slider('month',options=months,value=months[0],format_func=lambda m:sf_month_label(m,bt),key=f'sf_mon_{run_path}')
+        else:
+            mon=months[0]; c1.markdown(f'**month** {sf_month_label(mon,bt)}')
+        show=c2.multiselect('predictions',preds,default=preds,format_func=sf_name,key=f'sf_show_{run_path}')
+        if hkl:
+            st.caption(f'Top row: raw ECSF, ECXSF and HKL, each on its own grid and area, same SWE legend. Bottom row: ECXSF minus HKL '
+                       f'and raw ECSF minus HKL, each on the forecast grid with HKL averaged into the cells. Bias colours: soft within ±{MILD_BIAS:g} mm, strong beyond.')
+        else:
+            st.caption('Raw ECSF and ECXSF, each on its own grid and area, same SWE legend (no HKL for this run).')
+        ym=f'{mon[:4]}-{mon[4:]}'
+        for p in show:
+            st.markdown(f'#### {sf_name(p)}')
+            r=df[(df['pred']==os.path.basename(p))&(df['month']==ym)]
+            if not r.empty:
+                r=r.iloc[0]
+                parts=[('mean SWE',r.get('ecx_mean'),'{:.1f} mm'),('max',r.get('ecx_max'),'{:.0f} mm'),
+                       ('1° mean ECXSF',r.get('ecx1_mean'),'{:.1f} mm'),('ECSF',r.get('ecsf_mean'),'{:.1f} mm'),
+                       ('bias',r.get('ecx_bias'),'{:+.1f} mm'),('RMSE',r.get('ecx_rmse'),'{:.1f} mm'),('KGE',r.get('ecx_kge'),'{:.3f}'),
+                       ('1° RMSE ECSF',r.get('ecsf_rmse'),'{:.1f} mm'),('ECXSF',r.get('ecx1_rmse'),'{:.1f} mm'),
+                       ('MSE skill vs ECSF',r.get('skill_mse_vs_ecsf'),'{:+.2f}'),('cells improved',r.get('frac_cells_improved'),'{:.0%}')]
+                st.markdown(' | '.join(f'{k} **{fmt(v,f)}**' for k,v,f in parts if pd.notna(v)))
+            img_row([(os.path.join(p,f'{k}_{mon}.png'),None) for k,_ in SF_FIELDS])
+            img_row([(os.path.join(p,f'{k}_{mon}.png'),None) for k,_ in SF_BIAS])
+
+    st.divider()
+    st.subheader('Scores and summaries')
+    tabs=st.tabs(['Scores per month','Period summary','All figures','Scores table'])
+    order={'name':[sf_name(p) for p in preds]}
+
+    with tabs[0]:
+        c1,c2=st.columns([3,2])
+        opts=sf_metric_opts(df)
+        defs=[m for m in (['bias','rmse','kge'] if hkl else ['mean']) if m in opts]
+        # options depend on the run (with or without HKL), so the widget key does too
+        mets=c1.multiselect('scores',opts,default=defs,format_func=lambda m:SF_METRICS[m][0],key=f'sf_mets_{int(hkl)}')
+        srcs=c2.multiselect('compared on',list(SF_SOURCES),default=list(SF_SOURCES),format_func=SF_SOURCES.get,key='sf_srcs')
+        cols=st.columns(2)
+        for i,m in enumerate(mets):
+            parts=[df[['month','name',f'{s}_{m}']].rename(columns={f'{s}_{m}':'v'}).assign(source=SF_SOURCES[s])
+                   for s in srcs if f'{s}_{m}' in df]
+            if not parts: continue
+            long=pd.concat(parts,ignore_index=True)
+            f=px.line(long,x='month',y='v',color='name',line_dash='source',markers=True,height=360,title=SF_METRICS[m][0],
+                      category_orders=order,labels={'month':'forecast month','name':'prediction','v':SF_METRICS[m][1] or m,'source':''})
+            if m=='bias': f.add_hline(y=0,line_color='black',line_width=0.6)
+            with cols[i%2]: chart(f,key=f'sf_met_{m}')
+        if 'skill_mse_vs_ecsf' in df and df['skill_mse_vs_ecsf'].notna().any():
+            sk=df.melt(id_vars=['month','name'],value_vars=[c for c in ['skill_mse_vs_ecsf','frac_cells_improved'] if c in df],var_name='score',value_name='value')
+            sk['score']=sk['score'].map({'skill_mse_vs_ecsf':'MSE skill vs raw ECSF','frac_cells_improved':'fraction of 1° cells improved'})
+            f=px.line(sk,x='month',y='value',color='name',facet_col='score',markers=True,height=340,category_orders=order,
+                      labels={'month':'forecast month','name':'prediction','value':''})
+            f.for_each_annotation(lambda a:a.update(text=a.text.split('=')[-1]))
+            f.add_hline(y=0,line_color='black',line_width=0.6,col=1); f.add_hline(y=0.5,line_dash='dot',line_color='gray',col=2)
+            chart(f,key='sf_skill')
+            st.caption('Both on the same 1° ECSF cells. MSE skill above 0 and more than half of the cells improved mean the downscaling brings the forecast closer to HKL.')
+
+    with tabs[1]:
+        summ=[]
+        for p in preds:
+            d=df[df['pred']==os.path.basename(p)]
+            row={'prediction':sf_name(p),'months':len(d)}
+            for s,sl in [('ecx','ECXSF'),('ecx1','1° ECXSF'),('ecsf','1° ECSF')]:
+                for k,l in [('mean','mean SWE (mm)'),('bias','bias (mm)'),('rmse','RMSE (mm)'),('kge','KGE')]:
+                    if f'{s}_{k}' in d and d[f'{s}_{k}'].notna().any(): row[f'{sl} {l}']=d[f'{s}_{k}'].mean()
+            for k,l in [('skill_mse_vs_ecsf','MSE skill vs ECSF'),('frac_cells_improved','cells improved')]:
+                if k in d: row[l]=d[k].mean()
+            summ.append(row)
+        st.markdown('**Means over all forecast months**')
+        table(pd.DataFrame(summ).round(3),hide_index=True)
+        cols=st.columns(2)
+        for i,p in enumerate(preds):
+            with cols[i%2]:
+                st.markdown(f'**{sf_name(p)}**'); img(os.path.join(p,'swe_scores_vs_month.png'))
+
+    with tabs[2]:
+        p=st.selectbox('prediction',preds,format_func=sf_name,key='sf_allfig_pred')
+        figs=sorted(glob.glob(os.path.join(p,'*.png')))
+        if not figs:
+            st.info(f'no figures in {p}')
+        else:
+            fnames=[os.path.basename(x) for x in figs]
+            pick=st.multiselect(f'{len(figs)} figures in {p}',fnames,default=fnames,key='sf_allfig_pick')
+            ncol=st.radio('columns',[1,2,3],index=2,horizontal=True,key='sf_allfig_cols')
+            gc=st.columns(ncol)
+            for i,x in enumerate([x for x in figs if os.path.basename(x) in pick]):
+                with gc[i%ncol]: img(x,os.path.basename(x))
+
+    with tabs[3]:
+        show=df.drop(columns=['pred']).rename(columns={'name':'prediction'})
+        table(show.round(4),hide_index=True)
+        st.download_button('download scores (csv)',show.to_csv(index=False),file_name=f'swe_metrics_monthly_{sf_rel(run_path).replace(os.sep,"_")}.csv',mime='text/csv')
+
+def page_compare_seasonal():
+    st.title('Compare SWE predictions seasonal (ECXSF)')
+    runs=sf_runs(SF_DIR)
+    if not runs:
+        st.warning(f'no seasonal validation results (swe_metrics_monthly.csv) in {SF_DIR}'); sf_no_runs(); return
+    view=st.radio('view',CMP_VIEWS,horizontal=True,key='sfc_view')
+    region,runs=pick_region(runs,'sfc_region_sel')
+    if view==CMP_VIEWS[1]:
+        sf_detail_any(runs,region); return
+    st.caption('Raw ECSF and HKL once, then the ECXSF monthly mean of each model edition, for the same start date, prediction and month.')
+    keys=sorted({sf_date_key(r) for r in runs},reverse=True)
+    c1,c2,c3=st.columns([2,3,1])
+    key0=c1.selectbox('start date',keys,key=f'sfc_date_{region}',format_func=lambda x:case_label(SF_CASES,region,x))
+    key=f'{region}_{key0}'
+    by_model={}
+    for r in runs:
+        if sf_date_key(r)==key0: by_model.setdefault(r['model'],r)
+    models=prod_first(by_model)
+    pick=c2.multiselect('models',models,default=models,format_func=edition_name,key=f'sfc_models_{key}')
+    if not pick:
+        st.info('pick at least one model'); return
+    common=None
+    for m in pick:
+        labs={os.path.basename(p) for p in by_model[m]['preds']}
+        common=labs if common is None else common&labs
+    if not common:
+        st.warning('the picked models have no prediction in common for this start date'); return
+    pred=c3.selectbox('prediction',sorted(common,key=sf_sort_key),format_func=sf_short,key=f'sfc_pred_{key}')
+    pdir={m:next(p for p in by_model[m]['preds'] if os.path.basename(p)==pred) for m in pick}
+    months=sf_months(pdir.values())
+    if not months:
+        st.info('no monthly maps shared by the picked models'); return
+    bt=by_model[pick[0]]['base_time']
+    c1,c2=st.columns([4,1])
+    mon=c1.select_slider('month',options=months,value=months[0],format_func=lambda m:sf_month_label(m,bt),key=f'sfc_mon_{key}') if len(months)>1 else months[0]
+    ref=pdir[pick[0]]   # raw ECSF and HKL are the same in every model folder, taken from the first model
+
+    panels=[(os.path.join(ref,f'ecsf_{mon}.png'),'raw ECSF (1°)'),(os.path.join(ref,f'hkl_{mon}.png'),'HKL (Snowcap)')]
+    panels+=[(os.path.join(pdir[m],f'ecxsf_{mon}.png'),f'ECXSF {edition_name(m)}') for m in pick]
+    ncol=int(c2.number_input('maps per row',min_value=2,max_value=8,value=min(len(panels),5),step=1,key='sfc_ncol'))
+    for i in range(0,len(panels),ncol):
+        img_row(panels[i:i+ncol])
+
+    with st.expander('bias maps for this month (forecast minus HKL)',expanded=False):
+        bpan=[(os.path.join(ref,f'bias_ecsf_hkl_{mon}.png'),'raw ECSF minus HKL (1°)')]
+        bpan+=[(os.path.join(pdir[m],f'bias_ecxsf_hkl_{mon}.png'),f'ECXSF {edition_name(m)} minus HKL') for m in pick]
+        bpan=[(p,c) for p,c in bpan if os.path.exists(p)]
+        for i in range(0,len(bpan),4):
+            img_row(bpan[i:i+4])
+
+    parts=[]
+    for m in pick:
+        d=read_csv(os.path.join(pdir[m],'swe_metrics_monthly.csv'))
+        if d is not None: parts.append(d.assign(model=edition_name(m)))
+    if not parts: return
+    df=pd.concat(parts,ignore_index=True)
+    st.subheader('Scores')
+    ym=f'{mon[:4]}-{mon[4:]}'
+    cols={'ecx_bias':'bias (mm)','ecx_mae':'MAE (mm)','ecx_rmse':'RMSE (mm)','ecx_r':'r','ecx_kge':'KGE',
+          'ecx1_rmse':'1° RMSE ECXSF (mm)','ecsf_rmse':'1° RMSE raw ECSF (mm)','skill_mse_vs_ecsf':'MSE skill vs ECSF'}
+    dd=df[df['month']==ym]
+    if not dd.empty:
+        st.markdown(f'**{sf_month_label(mon,bt)}**')
+        table(dd.set_index('model')[[c for c in cols if c in dd]].rename(columns=cols).round(3))
+    c1,c2=st.columns(2)
+    opts=[m for m in ['rmse','bias','mae','kge','mean'] if m in sf_metric_opts(df)] or ['mean']
+    if st.session_state.get('sfc_met') not in opts: st.session_state['sfc_met']=opts[0]
+    met=c1.radio('score',opts,horizontal=True,format_func=lambda m:SF_METRICS[m][0],key='sfc_met')
+    if not sf_has_hkl(df): c1.caption('no HKL for these runs, mean SWE only')
+    res=c2.radio('grid',['own grid','1° cells'],horizontal=True,key='sfc_res',
+                 help='1° cells: ECXSF and raw ECSF against HKL on the same ECSF cells, so raw ECSF can be drawn too')
+    pre='ecx' if res=='own grid' else 'ecx1'
+    if f'{pre}_{met}' not in df:
+        st.info(f'no {res} scores in these runs'); return
+    long=df[['month','model',f'{pre}_{met}']].rename(columns={f'{pre}_{met}':'v'})
+    if res!='own grid' and f'ecsf_{met}' in df:
+        e=df[df['model']==df['model'].iloc[0]][['month',f'ecsf_{met}']].rename(columns={f'ecsf_{met}':'v'}).assign(model='raw ECSF')
+        long=pd.concat([e,long])
+    f=px.line(long,x='month',y='v',color='model',markers=True,height=380,title=f'{SF_METRICS[met][0]} per forecast month, {sf_short(pred)} ({res})',
+              labels={'month':'forecast month','v':SF_METRICS[met][1] or met,'model':''})
+    if met=='bias': f.add_hline(y=0,line_color='black',line_width=0.6)
+    f.update_traces(selector=dict(name='raw ECSF'),line=dict(dash='dash',color='gray'))
+    chart(f,key='sfc_lead')
+
+    # ---- every start date the picked models have: mean scores model against model
+    with st.expander('all start dates, model against model (means over all forecast months of this prediction)',expanded=False):
+        rows=[]
+        for r in runs:
+            if r['model'] not in pick: continue
+            p=next((x for x in r['preds'] if os.path.basename(x)==pred),None)
+            d=read_csv(os.path.join(p,'swe_metrics_monthly.csv')) if p else None
+            if d is None or f'{pre}_{met}' not in d: continue
+            rows.append({'start date':sf_date_key(r),'model':edition_name(r['model']),SF_METRICS[met][0]:d[f'{pre}_{met}'].mean()})
+        if rows:
+            t=pd.DataFrame(rows)
+            table(t.pivot_table(index='start date',columns='model',values=SF_METRICS[met][0]).round(3))
+            f=px.bar(t,x='start date',y=SF_METRICS[met][0],color='model',barmode='group',height=360)
+            f.update_layout(xaxis_type='category',legend=dict(orientation='h',y=1.1),margin=dict(t=30))
+            chart(f,key='sfc_alldates')
+
+# ---------------------------------------------------------------
+{'Overview':page_overview,'Training':page_training,'Training explorer':page_training_explorer,
+ 'Validation':page_validation,'Validation explorer':page_validation_explorer,
+ 'SWE prediction 10 / 15 days':page_forecasts,'Compare SWE predictions 10 / 15 days':page_compare,
+ 'SWE prediction seasonal':page_seasonal,'Compare SWE predictions seasonal':page_compare_seasonal}[page]()
 
 # footer on every page: CryoSCOPE contact and funding statement (EU, SERI, MoES)
 if logo('cryoscope.png'):
