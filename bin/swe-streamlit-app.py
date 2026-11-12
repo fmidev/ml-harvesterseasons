@@ -1809,11 +1809,15 @@ def page_compare():
             chart(f,key='cmpm_alldates')
 
 # ---------------------------------------------------------------
-# Seasonal pages: ECXSF monthly means validated against HKL, figures and scores from swe-seasonal-validation.py
-# layout: validation_sf/<model>/<start date>/<prediction>/ with swe_metrics_monthly.csv and the png figures, run_info.json
-#         (model, base_time, region) in <start date>/, e.g. validation_sf/FIN5/20231101/ensmean/
+# Seasonal pages: ECXSF monthly means validated against HKL, figures and scores from xgb-validate-swe-sf.py
+# layout: validation_sf/<model>/<start date>/ as the script writes OUTDIR, e.g. validation_sf/FIN5/201803/ with
+#           run_info.json                    base_time, region, grid, forecast_window, timeseries_domain, hkl_monthly
+#           swe_domain_mean_timeseries.csv   domain mean SWE per time step: HKL, ECXSF ens mean and every member (and the png)
+#           swe_metrics_monthly_all.csv      the predictions' monthly scores together (not needed, read per prediction)
+#           <prediction>/                    ensmean, member00, ...: swe_metrics_monthly.csv, pred_info.json and the png maps
 # one start date per model still works: validation_sf/<model>/<prediction>/ with run_info.json in <model>/
-# folder names map to model editions with MODEL_ALIASES; a region suffix on the model folder (FIN5_Alps) gives the region
+# the model folder name gives the model edition (MODEL_ALIASES: FIN5 -> FIN5noclim); 'model' in run_info.json is used only when
+# the folder name is generic (ECXSF); a region suffix on the model folder (FIN5_Alps) gives the region
 # ---------------------------------------------------------------
 SF_ORDER=['ensmean','member00']
 SF_NAMES={'ensmean':'ECXSF ens mean'}
@@ -1827,6 +1831,8 @@ SF_RES=['2.8 km','9 km']
 SF_RES_SPLIT_DEG=0.05   # grid step (degrees) at or below this is 2.8 km (ECXSF 0.025°), above it 9 km
 SF_RES_SPLIT_KM=5.0     # same split for names given in km (2.8km, 3km, 9km)
 SF_RES_SEP=' @ '        # compare page, both resolutions: model key 'FIN5noclim @ 9 km'
+SF_GENERIC_MODELS={'ECXSF'}   # 'model' values in run_info.json that name the product, not a model edition (the script's default)
+SF_TS_FILE='swe_domain_mean_timeseries.csv'   # run folder: domain mean SWE per time step, columns valid_time, hkl, ecxsf_ensmean, ecxsf_m00..
 
 def sf_res_name(v):
     # '0.025°', 0.1, '9km', '2.8 km' -> '2.8 km' or '9 km'; None when it can not be read
@@ -1913,10 +1919,12 @@ def sf_runs(sdir,default_res=SF_RES[0],skip=()):
                 bt=pd.Timestamp(f"{d['month']}-01")-pd.DateOffset(months=int(d['lead_month'])-1)
             except Exception: bt=None
         rp=os.path.dirname(run)
-        if info.get('model'): mfolder=info['model']
-        elif run==sdir: mfolder='ECXSF'
+        # the model folder name wins over 'model' in run_info.json: the validation script writes its default 'ECXSF'
+        # there when it is run without a model name, and the folder is what the results were copied into
+        if run==sdir: mfolder=info.get('model') or 'ECXSF'
         elif rp==sdir: mfolder=os.path.basename(run)   # validation_sf/FIN5/ensmean/
         else: mfolder=os.path.basename(rp)              # validation_sf/FIN5/20231101/ensmean/
+        if mfolder in SF_GENERIC_MODELS and info.get('model') and info['model'] not in SF_GENERIC_MODELS: mfolder=info['model']
         model,res_f=sf_split_res(mfolder)              # FIN5_Alps_9km
         model,region=fc_split_model(model)
         if res_f is None: model,res_f=sf_split_res(model)   # FIN5_9km_Alps
@@ -1970,7 +1978,91 @@ def sf_no_runs(res=SF_RES[0]):
     st.markdown(f'Copy the {res} output of `xgb-validate-swe-sf.py` here as `<model>/<start date>/<prediction>/`, for example '
                 '`FIN5/20231101/ensmean/` (Alps: `FIN5_Alps/20231101/ensmean/`). '
                 "A run's own `grid` in run_info.json, or a `_9km` / `_2.8km` suffix on the model folder, overrides the folder it is in.")
-    st.code(f'rsync -av ubuntu@smartmet-destine:/home/ubuntu/data/snowmodel_validation/figs_swe_seasonal/ {dest}/',language='bash')
+    st.code(f'rsync -av smartmet@firedanger.nsdc.fmi.fi:/home/users/smartmet/data/swe-validation/figs_swe_seasonal/ {dest}/',language='bash')
+
+def sf_timeseries(run):
+    # swe_domain_mean_timeseries.csv of one run, None when the run has none
+    d=read_csv(os.path.join(run,SF_TS_FILE))
+    if d is None or 'valid_time' not in d: return None
+    d=d.copy(); d['valid_time']=pd.to_datetime(d['valid_time'])
+    return d.sort_values('valid_time')
+
+def sf_ts_members(d): return [c for c in d.columns if c.startswith('ecxsf_m') and c[7:].isdigit()]
+
+def sf_ts_scores(d):
+    # domain mean series: ECXSF ens mean against HKL, peaks and how often HKL is inside the member range
+    out={}
+    if 'ecxsf_ensmean' in d:
+        i=d['ecxsf_ensmean'].idxmax()
+        if pd.notna(i): out['peak ECXSF ens mean']=(d.at[i,'ecxsf_ensmean'],d.at[i,'valid_time'])
+    if 'hkl' not in d or not d['hkl'].notna().any(): return out
+    i=d['hkl'].idxmax(); out['peak HKL']=(d.at[i,'hkl'],d.at[i,'valid_time'])
+    if 'ecxsf_ensmean' in d:
+        b=d.dropna(subset=['hkl','ecxsf_ensmean'])
+        if len(b)>1:
+            e=b['ecxsf_ensmean']-b['hkl']
+            out['bias']=e.mean(); out['RMSE']=float(np.sqrt((e**2).mean()))
+            out['r']=b['ecxsf_ensmean'].corr(b['hkl'])
+    mem=sf_ts_members(d)
+    if mem:
+        b=d.dropna(subset=['hkl'])
+        lo,hi=b[mem].min(axis=1),b[mem].max(axis=1)
+        ok=lo.notna()
+        if ok.any(): out['HKL inside members']=float(((b['hkl']>=lo)&(b['hkl']<=hi))[ok].mean())
+    return out
+
+def sf_ts_fig(d,show='lines',height=460,title=None):
+    # members (thin blue lines or a 10 to 90 % band), ensemble mean black dotted, HKL red, as in the validation script figure
+    fig=go.Figure()
+    mem=sf_ts_members(d)
+    t=d['valid_time']
+    if mem and show=='lines':
+        for i,c in enumerate(mem):
+            fig.add_scatter(x=t,y=d[c],mode='lines',line=dict(color='#1f77b4',width=0.7),opacity=0.45,hoverinfo='skip',
+                            name=f'ECXSF members ({len(mem)})',legendgroup='members',showlegend=i==0)
+    elif mem and show=='band':
+        q=d[mem].quantile([0.1,0.9],axis=1).T
+        fig.add_scatter(x=t,y=q[0.9],mode='lines',line=dict(width=0),hoverinfo='skip',showlegend=False)
+        fig.add_scatter(x=t,y=q[0.1],mode='lines',line=dict(width=0),fill='tonexty',fillcolor='rgba(31,119,180,0.25)',
+                        name=f'ECXSF members 10 to 90 % ({len(mem)})',hoverinfo='skip')
+        fig.add_scatter(x=t,y=d[mem].min(axis=1),mode='lines',line=dict(color='#1f77b4',width=0.6,dash='dot'),name='member min / max',legendgroup='mm',hoverinfo='skip')
+        fig.add_scatter(x=t,y=d[mem].max(axis=1),mode='lines',line=dict(color='#1f77b4',width=0.6,dash='dot'),legendgroup='mm',showlegend=False,hoverinfo='skip')
+    if 'ecxsf_ensmean' in d:
+        fig.add_scatter(x=t,y=d['ecxsf_ensmean'],mode='lines',line=dict(color='black',dash='dot',width=2.2),name='ECXSF ensemble mean',
+                        hovertemplate='%{y:.1f} mm')
+    if 'hkl' in d and d['hkl'].notna().any():
+        h=d.dropna(subset=['hkl'])
+        fig.add_scatter(x=h['valid_time'],y=h['hkl'],mode='lines',line=dict(color='#d7191c',width=2),name='HKL',hovertemplate='%{y:.1f} mm')
+    fig.update_layout(height=height,title=title,yaxis_title='domain mean SWE (mm)',hovermode='x unified',
+                      legend=dict(orientation='h',y=1.08),margin=dict(t=60 if title else 30))
+    return fig
+
+def sf_ts_view(run,info,key):
+    # domain mean time series of one run: interactive from the csv, the validation script png when there is no csv
+    d=sf_timeseries(run)
+    if d is None:
+        p=os.path.join(run,'swe_domain_mean_timeseries.png')
+        if os.path.exists(p): img(p)
+        else: st.info(f'no {SF_TS_FILE} in this run (written by xgb-validate-swe-sf.py when the daily ECXSF member files are there)')
+        return
+    mem=sf_ts_members(d)
+    c1,c2=st.columns([1,4])
+    show=c1.radio('members',['lines','band','off'],horizontal=False,key=f'sf_ts_show_{key}',disabled=not mem,
+                  format_func={'lines':'every member','band':'10 to 90 % band','off':'ens mean only'}.get)
+    s=sf_ts_scores(d)
+    for lab,k,f in [('peak ECXSF ens mean','peak ECXSF ens mean','{:.0f} mm'),('peak HKL','peak HKL','{:.0f} mm')]:
+        if k in s: c1.metric(lab,fmt(s[k][0],f),f"{s[k][1]:%Y-%m-%d}",delta_color='off')
+    for lab,k,f in [('bias, ens mean minus HKL','bias','{:+.1f} mm'),('RMSE','RMSE','{:.1f} mm'),('r','r','{:.3f}'),
+                    ('HKL inside the member range','HKL inside members','{:.0%}')]:
+        if k in s: c1.metric(lab,fmt(s[k],f))
+    with c2: chart(sf_ts_fig(d,show),key=f'sf_ts_{key}')
+    st.caption(f"domain mean SWE over the {info.get('timeseries_domain','forecast domain')}, every time step of the forecast window"
+               + (f" ({info['forecast_window'][0]} to {info['forecast_window'][1]})" if info.get('forecast_window') else '')
+               + '. Scores and peaks use the domain mean series, so they say how well the total snow amount evolves, not where it is.')
+    with st.expander('time series table'):
+        table(d.round(2),hide_index=True)
+        st.download_button('download time series (csv)',d.to_csv(index=False),file_name=f'swe_domain_mean_{sf_rel(run).replace(os.sep,"_")}.csv',
+                           mime='text/csv',key=f'sf_ts_dl_{key}')
 
 def img_row(paths,default_ratio=0.9):
     # images side by side with the same height (column widths follow the png aspect ratios); missing pngs are left out
@@ -2044,9 +2136,13 @@ def sf_run_view(R,region,model):
     if df is None:
         st.warning('no readable swe_metrics_monthly.csv in this run'); return
     hkl=sf_has_hkl(df)
-    st.caption(f"region {region} | model {sfm_name(model)} | {R.get('res','')} grid | start {sf_date_key(R)} | {', '.join(sf_name(p) for p in preds)} | "
-               f"months {df['month'].min()} to {df['month'].max()} | monthly means | "
+    info=read_json(os.path.join(run_path,'run_info.json'))
+    fw=info.get('forecast_window')
+    st.caption(f"region {region} | model {sfm_name(model)} | {R.get('res','')} grid ({info.get('grid','?')}) | start {sf_date_key(R)} | "
+               + (f"forecast window {fw[0]} to {fw[1]} | " if fw else '')
+               + f"{', '.join(sf_name(p) for p in preds)} | months {df['month'].min()} to {df['month'].max()} | monthly means | "
                +("reference HKL SWE | bias is forecast minus HKL, HKL averaged into the forecast cells" if hkl else "no HKL for this run, forecast only")
+               +(" | HKL monthly means from raw daily HKL, forecast window days only" if hkl and info.get('hkl_monthly') else '')
                +f" | {sf_rel(run_path)} | written {stamp(os.path.join(preds[0],'swe_metrics_monthly.csv'))}")
     if not hkl:
         st.info('No HKL SWE for this start date: the validation script wrote the forecast maps and mean SWE only, no HKL comparison.')
@@ -2079,16 +2175,24 @@ def sf_run_view(R,region,model):
                        ('bias',r.get('ecx_bias'),'{:+.1f} mm'),('RMSE',r.get('ecx_rmse'),'{:.1f} mm'),('KGE',r.get('ecx_kge'),'{:.3f}'),
                        ('1° RMSE ECSF',r.get('ecsf_rmse'),'{:.1f} mm'),('ECXSF',r.get('ecx1_rmse'),'{:.1f} mm'),
                        ('MSE skill vs ECSF',r.get('skill_mse_vs_ecsf'),'{:+.2f}'),('cells improved',r.get('frac_cells_improved'),'{:.0%}')]
+                hd=r.get('hkl_days')   # days HKL was averaged over (raw HKL, forecast window only): fewer than the month on a partial last month
+                if pd.notna(hd) and hd>0:
+                    dim=pd.Timestamp(ym+'-01').days_in_month
+                    parts.append(('HKL days',f"{int(hd)} of {dim}"+(' (partial month)' if hd<dim else ''),'{}'))
                 st.markdown(' | '.join(f'{k} **{fmt(v,f)}**' for k,v,f in parts if pd.notna(v)))
             img_row([(os.path.join(p,f'{k}_{mon}.png'),None) for k,_ in SF_FIELDS])
             img_row([(os.path.join(p,f'{k}_{mon}.png'),None) for k,_ in SF_BIAS])
 
     st.divider()
     st.subheader('Scores and summaries')
-    tabs=st.tabs(['Scores per month','Period summary','All figures','Scores table'])
+    names=['Domain mean time series','Scores per month','Period summary','All figures','Scores table']
+    T=dict(zip(names,st.tabs(names)))
     order={'name':[sf_name(p) for p in preds]}
 
-    with tabs[0]:
+    with T['Domain mean time series']:
+        sf_ts_view(run_path,info,key=run_path)
+
+    with T['Scores per month']:
         c1,c2=st.columns([3,2])
         opts=sf_metric_opts(df)
         defs=[m for m in (['bias','rmse','kge'] if hkl else ['mean']) if m in opts]
@@ -2115,7 +2219,7 @@ def sf_run_view(R,region,model):
             chart(f,key='sf_skill')
             st.caption('Both on the same 1° ECSF cells. MSE skill above 0 and more than half of the cells improved mean the downscaling brings the forecast closer to HKL.')
 
-    with tabs[1]:
+    with T['Period summary']:
         summ=[]
         for p in preds:
             d=df[df['pred']==os.path.basename(p)]
@@ -2133,7 +2237,7 @@ def sf_run_view(R,region,model):
             with cols[i%2]:
                 st.markdown(f'**{sf_name(p)}**'); img(os.path.join(p,'swe_scores_vs_month.png'))
 
-    with tabs[2]:
+    with T['All figures']:
         p=st.selectbox('prediction',preds,format_func=sf_name,key='sf_allfig_pred')
         figs=sorted(glob.glob(os.path.join(p,'*.png')))
         if not figs:
@@ -2146,7 +2250,7 @@ def sf_run_view(R,region,model):
             for i,x in enumerate([x for x in figs if os.path.basename(x) in pick]):
                 with gc[i%ncol]: img(x,os.path.basename(x))
 
-    with tabs[3]:
+    with T['Scores table']:
         show=df.drop(columns=['pred']).rename(columns={'name':'prediction'})
         table(show.round(4),hide_index=True)
         st.download_button('download scores (csv)',show.to_csv(index=False),file_name=f'swe_metrics_monthly_{sf_rel(run_path).replace(os.sep,"_")}.csv',mime='text/csv')
@@ -2202,6 +2306,35 @@ def page_compare_seasonal():
     ncol=int(c2.number_input('maps per row',min_value=2,max_value=8,value=min(len(panels),5),step=1,key='sfc_ncol'))
     for i in range(0,len(panels),ncol):
         img_row(panels[i:i+ncol])
+
+    # ---- domain mean SWE over the whole forecast window: ens mean of each model and HKL
+    with st.expander('domain mean SWE time series (ECXSF ensemble mean of each model, HKL)',expanded=True):
+        fig=go.Figure(); doms=set(); hkl_from=None; rows=[]
+        for m in pick:
+            run=by_model[m]['run']; d=sf_timeseries(run)
+            if d is None: continue
+            doms.add(read_json(os.path.join(run,'run_info.json')).get('timeseries_domain','?'))
+            if 'ecxsf_ensmean' in d:
+                fig.add_scatter(x=d['valid_time'],y=d['ecxsf_ensmean'],mode='lines',name=f'ECXSF {sfm_name(m)} ens mean',hovertemplate='%{y:.1f} mm')
+            if hkl_from is None and 'hkl' in d and d['hkl'].notna().any():
+                h=d.dropna(subset=['hkl']); hkl_from=m
+                fig.add_scatter(x=h['valid_time'],y=h['hkl'],mode='lines',line=dict(color='#d7191c',width=2.4),name='HKL',hovertemplate='%{y:.1f} mm')
+            s=sf_ts_scores(d)
+            rows.append({'model':sfm_name(m),'members':len(sf_ts_members(d)),
+                         'peak ens mean (mm)':s.get('peak ECXSF ens mean',(np.nan,))[0],
+                         'peak date':f"{s['peak ECXSF ens mean'][1]:%Y-%m-%d}" if 'peak ECXSF ens mean' in s else '',
+                         'peak HKL (mm)':s.get('peak HKL',(np.nan,))[0],
+                         'HKL peak date':f"{s['peak HKL'][1]:%Y-%m-%d}" if 'peak HKL' in s else '',
+                         'bias (mm)':s.get('bias'),'RMSE (mm)':s.get('RMSE'),'r':s.get('r'),'HKL inside members':s.get('HKL inside members')})
+        if not fig.data:
+            st.info(f'no {SF_TS_FILE} in the runs of the picked models')
+        else:
+            fig.update_layout(height=440,yaxis_title='domain mean SWE (mm)',hovermode='x unified',legend=dict(orientation='h',y=1.08),margin=dict(t=30))
+            chart(fig,key=f'sfc_ts_{key}')
+            table(pd.DataFrame(rows).round(3),hide_index=True)
+            st.caption('Each series is the mean over that run\'s own domain (' + '; '.join(sorted(doms)) + '). '
+                       + (f'HKL is drawn from the {sfm_name(hkl_from)} run; on another grid its HKL domain mean differs slightly, '
+                          'the scores in the table use each run\'s own HKL.' if hkl_from is not None and len(pick)>1 else ''))
 
     with st.expander('bias maps for this month (forecast minus HKL)',expanded=False):
         bpan=[(os.path.join(ref,f'bias_ecsf_hkl_{mon}.png'),'raw ECSF minus HKL (1°)')]
