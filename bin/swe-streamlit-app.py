@@ -1833,6 +1833,7 @@ SF_RES_SPLIT_KM=5.0     # same split for names given in km (2.8km, 3km, 9km)
 SF_RES_SEP=' @ '        # compare page, both resolutions: model key 'FIN5noclim @ 9 km'
 SF_GENERIC_MODELS={'ECXSF'}   # 'model' values in run_info.json that name the product, not a model edition (the script's default)
 SF_TS_FILE='swe_domain_mean_timeseries.csv'   # run folder: domain mean SWE per time step, columns valid_time, hkl, ecxsf_ensmean, ecxsf_m00..
+SF_TS_ONLY={'2.8 km'}   # SWE prediction seasonal pages that show only the domain mean time series below the maps (no other score tabs)
 
 def sf_res_name(v):
     # '0.025°', 0.1, '9km', '2.8 km' -> '2.8 km' or '9 km'; None when it can not be read
@@ -2105,7 +2106,7 @@ def page_seasonal(res):
     k=st.selectbox('start date',keys,key=skey,format_func=lambda x:case_label(SF_CASES,region,x))
     st.divider()
     st.header(case_label(SF_CASES,region,k))
-    sf_run_view(by[k],region,model)
+    sf_run_view(by[k],region,model,ts_only=res in SF_TS_ONLY)
 
 def sf_detail_any(runs,region,res):
     # one model in detail, any model edition and start date (the compare page); res: resolution picked there (or 'both')
@@ -2129,7 +2130,8 @@ def sf_detail_any(runs,region,res):
         run_path=st.selectbox('start date',paths,key=skey,format_func=lab)
     sf_run_view(next(r for r in runs if r['run']==run_path),region,model)
 
-def sf_run_view(R,region,model):
+def sf_run_view(R,region,model,ts_only=False):
+    # ts_only: below the monthly maps only the domain mean time series, the other score tabs are left out
     # monthly maps, scores and figures of one seasonal run (one model, region and start date)
     run_path,preds,bt=R['run'],R['preds'],R['base_time']
     df=sf_metrics(preds)
@@ -2184,6 +2186,11 @@ def sf_run_view(R,region,model):
             img_row([(os.path.join(p,f'{k}_{mon}.png'),None) for k,_ in SF_BIAS])
 
     st.divider()
+    if ts_only:
+        # only the domain mean time series, no tabs (SF_TS_ONLY pages)
+        st.subheader('Domain mean time series')
+        sf_ts_view(run_path,info,key=run_path)
+        return
     st.subheader('Scores and summaries')
     names=['Domain mean time series','Scores per month','Period summary','All figures','Scores table']
     T=dict(zip(names,st.tabs(names)))
